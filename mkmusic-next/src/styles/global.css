@@ -1,0 +1,126 @@
+/* Global styles for MKOnlinePlayer */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom animations */
+@keyframes dotShine {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+
+.dot-move {
+  animation: dotShine 1s infinite;
+}
+
+/* Progress bar styles */
+.mkpgb-locked {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* Player button styles */
+.player-btn {
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  display: inline-block;
+}
+
+.btn-play {
+  background-image: url('/images/player.png');
+}
+
+.btn-play.btn-state-paused {
+  background-image: url('/images/player.png');
+  /* Different image for paused state */
+}
+
+.btn-prev {
+  background-image: url('/images/player.png');
+  /* Previous button image */
+}
+
+.btn-next {
+  background-image: url('/images/player.png');
+  /* Next button image */
+}
+
+.btn-order {
+  background-image: url('/images/player.png');
+  /* Order button image */
+}
+
+.btn-order-list {
+  background-image: url('/images/player.png');
+  /* List order image */
+}
+
+.btn-order-single {
+  background-image: url('/images/player.png');
+  /* Single order image */
+}
+
+.btn-order-random {
+  background-image: url('/images/player.png');
+  /* Random order image */
+}
+
+.btn-quiet {
+  background-image: url('/images/player.png');
+  /* Quiet button image */
+}
+
+.btn-quiet.btn-state-quiet {
+  background-image: url('/images/player.png');
+  /* Muted state image */
+}
+
+/* Lyric styles */
+.lrc-item {
+  transition: color 0.3s ease;
+}
+
+.lrc-item.lplaying {
+  color: #31c27c;
+  font-weight: bold;
+}
+
+.lyric-tip {
+  color: #999;
+  text-align: center;
+  padding: 20px 0;
+}
+
+/* List item styles */
+.list-item:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.list-item.list-playing {
+  color: #31c27c;
+}
+
+/* Background blur styles */
+#blur-img {
+  background-size: cover;
+  background-position: center;
+  transition: opacity 1s ease;
+}
+
+.blur-mask {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+}
+
+/* Mobile specific styles */
+@media (max-width: 768px) {
+  .mobile-mask {
+    background-color: rgba(0, 0, 0, 0.8);
+  }
+}
