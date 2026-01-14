@@ -1,5 +1,36 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/pages/api-reference/create-next-app).
 
+## Prerequisites
+
+This project requires **Node.js 18** to run properly.
+
+### Node.js Version Management
+
+The project includes configuration files to ensure the correct Node.js version:
+
+- `.nvmrc` - For NVM (Node Version Manager) users
+- `.node-version` - For `nodenv` or other version managers
+- `package.json` - Contains the `engines` field for explicit version requirements
+
+To install and use the correct Node.js version:
+
+```bash
+# Using NVM (Node Version Manager)
+nvm install 18
+nvm use 18
+
+# Using nodenv
+nodenv install 18.0.0
+nodenv local 18.0.0
+
+# Using n
+n 18
+```
+
+The `package.json` also specifies the following engine requirements:
+- Node.js: 18.x
+- npm: >= 9.0.0
+
 ## Getting Started
 
 First, run the development server:
