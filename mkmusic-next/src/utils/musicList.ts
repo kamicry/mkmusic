@@ -1,92 +1,66 @@
-// Music list configuration - migrated from original musicList.js
-import { Playlist } from '../types/player';
+import { Playlist } from '../types';
 
-export const initialMusicList: Playlist[] = [
-  // System reserved playlists - do not modify
+export const defaultMusicList: Playlist[] = [
   {
     name: "搜索结果",
     cover: "",
-    creatorName: "",
-    creatorAvatar: "",
     item: []
   },
   {
     name: "正在播放",
     cover: "",
-    creatorName: "",
-    creatorAvatar: "",
     item: []
   },
   {
     name: "播放历史",
-    cover: "images/history.png",
-    creatorName: "",
-    creatorAvatar: "",
+    cover: "/images/history.png",
     item: []
   },
-  // Custom playlists start here
   {
-    id: 3778678, // 云音乐热歌榜
+    id: "3778678",
     name: "云音乐热歌榜",
     cover: "",
-    creatorName: "",
-    creatorAvatar: "",
     item: []
   },
   {
-    id: 3779629, // 云音乐新歌榜
+    id: "3779629",
     name: "云音乐新歌榜",
     cover: "",
-    creatorName: "",
-    creatorAvatar: "",
     item: []
   },
   {
-    id: 4395559, // 华语金曲榜
+    id: "4395559",
     name: "华语金曲榜",
     cover: "",
-    creatorName: "",
-    creatorAvatar: "",
     item: []
   },
   {
-    id: 64016, // 中国TOP排行榜（内地榜）
+    id: "64016",
     name: "中国TOP排行榜（内地榜）",
     cover: "",
-    creatorName: "",
-    creatorAvatar: "",
     item: []
   },
   {
-    id: 112504, // 中国TOP排行榜（港台榜）
+    id: "112504",
     name: "中国TOP排行榜（港台榜）",
     cover: "",
-    creatorName: "",
-    creatorAvatar: "",
     item: []
   },
   {
-    id: 19723756, // 云音乐飙升榜
+    id: "19723756",
     name: "云音乐飙升榜",
     cover: "",
-    creatorName: "",
-    creatorAvatar: "",
     item: []
   },
   {
-    id: 2884035, // "网易原创歌曲榜"
+    id: "2884035",
     name: "网易原创歌曲榜",
     cover: "",
-    creatorName: "",
-    creatorAvatar: "",
     item: []
   },
-  // Custom playlist example
   {
     name: "自定义列表",
     cover: "https://p3.music.126.net/34YW1QtKxJ_3YnX9ZzKhzw==/2946691234868155.jpg",
-    creatorName: "",
-    creatorAvatar: "",
     item: [
       {
         id: "436514312",
@@ -111,25 +85,61 @@ export const initialMusicList: Playlist[] = [
         lyric_id: "65528",
         pic: "https://p3.music.126.net/BFuOepLmD63tY75UJs1c0Q==/18872017579169120.jpg",
         url: ""
+      },
+      {
+        id: "001JD1SR29d1hS",
+        name: "特别的爱给特别的你",
+        artist: "伍思凯",
+        album: "特别的爱给特别的你",
+        source: "tencent",
+        url_id: "001JD1SR29d1hS",
+        pic_id: "004DYsvN2QCYcj",
+        lyric_id: "001JD1SR29d1hS",
+        pic: "https://y.gtimg.cn/music/photo_new/T002R300x300M000004DYsvN2QCYcj.jpg?max_age=2592000",
+        url: ""
+      },
+      {
+        id: "81175",
+        name: "让我欢喜让我忧",
+        artist: "周华健",
+        album: "让我欢喜让我忧",
+        source: "xiami",
+        url_id: "81175",
+        pic_id: "81175",
+        lyric_id: "81175",
+        pic: "https://pic.xiami.net/images/album/img58/1258/66271400572139.jpg@300h_300w_100q_1c.jpg",
+        url: ""
+      },
+      {
+        id: "2a24dea6c74884195fe5b9732fd95ca8",
+        name: "小幸运",
+        artist: "金玟岐",
+        album: "金玟岐翻唱作品集",
+        source: "kugou",
+        url_id: "2a24dea6c74884195fe5b9732fd95ca8",
+        pic_id: "2a24dea6c74884195fe5b9732fd95ca8",
+        lyric_id: "2a24dea6c74884195fe5b9732fd95ca8",
+        pic: "http://singerimg.kugou.com/uploadpic/softhead/400/20161226/20161226105135733.jpg",
+        url: ""
+      },
+      {
+        id: "121004737",
+        name: "难忘今宵",
+        artist: "李谷一",
+        album: "难忘今宵",
+        source: "baidu",
+        url_id: "121004737",
+        pic_id: "121004737",
+        lyric_id: "121004737",
+        pic: "http://musicdata.baidu.com/data2/pic/2733cd9816b8618afd3038d5d9444940/266105319/266105319.jpg@s_0,w_150",
+        url: ""
       }
     ]
   },
   {
-    id: 440103454, // 网易云歌单ID
+    id: "440103454",
     name: "网易云歌单",
     cover: "",
-    creatorName: "",
-    creatorAvatar: "",
     item: []
   }
 ];
-
-// Format time for display (seconds to MM:SS)
-export const formatTime = (seconds: number): string => {
-  if (isNaN(seconds) || seconds < 0) return '00:00';
-
-  const minutes = Math.floor(seconds / 60);
-  const remainingSeconds = Math.floor(seconds % 60);
-
-  return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
-};

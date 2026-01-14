@@ -1,62 +1,243 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Head from 'next/head';
-import { PlayerProvider } from '../contexts/PlayerContext';
 import Header from '../components/Header';
-import Center from '../components/Center';
 import Footer from '../components/Footer';
+import BtnBar from '../components/BtnBar';
+import MusicList from '../components/MusicList';
+import DataArea from '../components/DataArea';
 import MainPlayer from '../components/MainPlayer';
-import { usePlayer } from '../contexts/PlayerContext';
+import SearchPanel from '../components/SearchPanel';
+import { usePlayerContext } from '../contexts/PlayerContext';
+import { defaultMusicList } from '../utils/musicList';
+import { ajaxSearch, ajaxUrl, ajaxPlaylist } from '../utils/api';
+import { useLayer } from '../hooks/useLayer';
+import { Music, Playlist } from '../types';
 
-const HomePage: React.FC = () => {
-  return (
-    <PlayerProvider>
-      <HomeContent />
-    </PlayerProvider>
-  );
-};
+export default function Home() {
+  const {
+    audioRef,
+    playlist,
+    setPlaylist,
+    playid,
+    setPlayid,
+    dislist,
+    setDislist,
+    musicList,
+    setMusicList,
+    setWd,
+    setSource,
+    setLoadPage,
+  } = usePlayerContext();
 
-const HomeContent: React.FC = () => {
-  const { audioRef, config, isMobile } = usePlayer();
+  const { msg } = useLayer();
+  const [showSearch, setShowSearch] = useState(false);
+  const [view, setView] = useState<'list' | 'sheet'>('list');
 
   useEffect(() => {
-    // Initialize audio element
-    if (audioRef.current) {
-      audioRef.current.volume = config.volume;
+    setMusicList(defaultMusicList);
+    // Load default playlist
+    loadPlaylist("3778678", 3); // 云音乐热歌榜
+  }, []);
+
+  const loadPlaylist = async (lid: string, index: number) => {
+    try {
+      const data = await ajaxPlaylist(lid);
+      setMusicList(prev => {
+        const newList = [...prev];
+        newList[index] = {
+          id: lid,
+          name: data.playlist.name,
+          cover: data.playlist.coverImgUrl + "?param=200y200",
+          item: data.playlist.tracks.map((track: any) => ({
+            id: track.id,
+            name: track.name,
+            artist: track.ar[0].name,
+            album: track.al.name,
+            source: "netease",
+            url_id: track.id,
+            pic_id: null,
+            lyric_id: track.id,
+            pic: track.al.picUrl + "?param=300y300",
+            url: null
+          }))
+        };
+        return newList;
+      });
+      if (index === 3) { // Default list to show
+          setDislist(3);
+      }
+    } catch (error) {
+      console.error('Failed to load playlist', error);
     }
-  }, [audioRef, config.volume]);
+  };
+
+  const handleSearch = async (wd: string, source: string) => {
+    setWd(wd);
+    setSource(source);
+    setLoadPage(1);
+    const loading = msg('搜索中', { icon: 16, shade: 0.01, time: 0 });
+    try {
+      const results = await ajaxSearch(wd, source, 1, 20);
+      const items: Music[] = results.map((item: any) => ({
+        id: item.id,
+        name: item.name,
+        artist: item.artist[0],
+        album: item.album,
+        source: item.source,
+        url_id: item.url_id,
+        pic_id: item.pic_id,
+        lyric_id: item.lyric_id,
+        pic: null,
+        url: null
+      }));
+      setMusicList(prev => {
+        const newList = [...prev];
+        newList[0].item = items;
+        return newList;
+      });
+      setDislist(0);
+      setView('list');
+    } catch (error) {
+      msg('搜索失败');
+    }
+  };
+
+  const handleItemClick = async (index: number) => {
+    if (dislist === 0) { // From search
+        const music = musicList[0].item[index];
+        const playingList = [...musicList[1].item];
+        const existingIndex = playingList.findIndex(m => m.id === music.id && m.source === music.source);
+        if (existingIndex !== -1) {
+            setPlaylist(1);
+            setPlayid(existingIndex);
+        } else {
+            playingList.splice(playid + 1, 0, music);
+            setMusicList(prev => {
+                const newList = [...prev];
+                newList[1].item = playingList;
+                return newList;
+            });
+            setPlaylist(1);
+            setPlayid(playid + 1);
+        }
+    } else {
+        if (dislist !== playlist) {
+            setMusicList(prev => {
+                const newList = [...prev];
+                newList[1].item = [...prev[dislist].item];
+                return newList;
+            });
+            setPlaylist(dislist);
+        }
+        setPlayid(index);
+    }
+  };
+
+  useEffect(() => {
+    if (playlist !== undefined) {
+      const music = musicList[playlist]?.item[playid];
+      if (music && audioRef.current) {
+        if (!music.url) {
+            ajaxUrl(music).then(url => {
+                if (url && url !== 'err') {
+                    music.url = url;
+                    if (audioRef.current) {
+                      audioRef.current.src = url;
+                      audioRef.current.play();
+                    }
+                } else {
+                    msg('歌曲链接获取失败');
+                }
+            });
+        } else {
+            audioRef.current.src = music.url;
+            audioRef.current.play();
+        }
+      }
+    }
+  }, [playlist, playid, musicList, audioRef]);
+
+  const currentMusic = playlist !== undefined ? musicList[playlist]?.item[playid] : null;
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
+    <>
       <Head>
-        <title>MKOnlinePlayer v2.4</title>
-        <meta name="description" content="一款开源的基于网易云音乐api的在线音乐播放器。具有音乐搜索、播放、下载、歌词同步显示、个人音乐播放列表同步等功能。" />
-        <meta name="keywords" content="孟坤播放器,在线音乐播放器,MKOnlinePlayer,网易云音乐,音乐api,音乐播放器源代码" />
-        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=0" />
-        <link rel="shortcut icon" href="/favicon.ico" />
+        <title>{currentMusic ? `正在播放: ${currentMusic.name} - ${currentMusic.artist}` : 'MKOnlinePlayer v2.4'}</title>
       </Head>
-
-      {/* Background blur container */}
-      <div id="blur-img" className="fixed inset-0 z-0"></div>
-
-      {/* Main content */}
-      <div className="relative z-10 min-h-screen flex flex-col">
-        {/* Header */}
-        <Header />
-
-        {/* Center content */}
-        <Center />
-
-        {/* Footer */}
-        <Footer />
+      
+      <div id="blur-img">
+        <div 
+          className="blured-img" 
+          style={{ 
+            backgroundImage: currentMusic?.pic ? `url(${currentMusic.pic})` : 'none',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            filter: 'blur(50px)',
+            transform: 'scale(1.1)',
+            height: '100%',
+            width: '100%',
+            transition: 'background-image 1s'
+          }}
+        ></div>
+        <div className="blur-mask" style={{ display: 'block' }}></div>
       </div>
 
-      {/* Audio element */}
-      <audio ref={audioRef} className="hidden" />
+      <Header />
 
-      {/* Main player logic */}
-      <MainPlayer />
-    </div>
+      <div className="center">
+        <div className="container">
+          <BtnBar 
+            onSearchClick={() => setShowSearch(true)} 
+            onShowList={(type) => {
+                if (type === 'playing') { setDislist(1); setView('list'); }
+                else if (type === 'sheet') setView('sheet');
+            }}
+          />
+          
+          <DataArea>
+            {view === 'sheet' && (
+              <div id="sheet" className="data-box">
+                {musicList.slice(3).map((sheet, index) => (
+                  <div key={index} className="sheet-item" onClick={() => { setDislist(index + 3); setView('list'); }}>
+                    <div className="sheet-cover-box">
+                      <img src={sheet.cover || 'images/player_cover.png'} className="sheet-cover" alt="sheet cover" />
+                    </div>
+                    <span className="sheet-name">{sheet.name}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+            
+            {view === 'list' && (
+              <MusicList 
+                list={musicList[dislist]?.item || []} 
+                currentPlayId={playlist === dislist ? playid : undefined}
+                onItemClick={handleItemClick}
+              />
+            )}
+          </DataArea>
+
+          <MainPlayer />
+        </div>
+      </div>
+
+      <Footer />
+
+      <audio ref={audioRef} style={{ display: 'none' }} />
+
+      {showSearch && (
+        <div className="layer-anim layui-layer layui-layer-page" style={{ zIndex: 19891015, width: '450px', top: '100px', left: '50%', marginLeft: '-225px', position: 'fixed' }}>
+          <div className="layui-layer-content">
+            <SearchPanel 
+              onSearch={handleSearch} 
+              onClose={() => setShowSearch(false)} 
+            />
+          </div>
+          <span className="layui-layer-setwin">
+            <a className="layui-layer-ico layui-layer-close layui-layer-close1" href="javascript:;" onClick={() => setShowSearch(false)}></a>
+          </span>
+        </div>
+      )}
+    </>
   );
-};
-
-export default HomePage;
+}
