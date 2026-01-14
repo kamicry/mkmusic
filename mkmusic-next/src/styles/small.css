@@ -88,7 +88,7 @@
         display: block;
         width: 30px;
         height: 30px;
-        background-image: url(../images/player.png);
+        background-image: url(/images/player.png);
         background-position: -30px -365px;
         right: 0;
         top: 50%;
