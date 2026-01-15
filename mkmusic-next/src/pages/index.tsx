@@ -27,6 +27,7 @@ export default function Home() {
     setWd,
     setSource,
     setLoadPage,
+    bitRate,
   } = usePlayerContext();
 
   const { msg } = useLayer();
@@ -81,22 +82,22 @@ export default function Home() {
     }
   };
 
-  const handleSearch = async (wd: string, source: string) => {
+  const handleSearch = async (wd: string, source: string, page: number = 1) => {
     setWd(wd);
     setSource(source);
-    setLoadPage(1);
+    setLoadPage(page);
     const loading = msg('搜索中', { icon: 16, shade: 0.01, time: 0 });
     try {
-      const results = await ajaxSearch(wd, source, 1, 20);
+      const results = await ajaxSearch(wd, source as any, page, 20);
       const items: Music[] = results.map((item: any) => ({
         id: item.id,
         name: item.name,
-        artist: item.artist[0],
+        artist: Array.isArray(item.artist) ? item.artist[0] : item.artist,
         album: item.album,
         source: item.source,
-        url_id: item.url_id,
-        pic_id: item.pic_id,
-        lyric_id: item.lyric_id,
+        url_id: item.url_id || item.id,
+        pic_id: item.pic_id || item.id,
+        lyric_id: item.lyric_id || item.id,
         pic: null,
         url: null
       }));
@@ -108,7 +109,8 @@ export default function Home() {
       setDislist(0);
       setView('list');
     } catch (error) {
-      msg('搜索失败');
+      const errorMessage = error instanceof Error ? error.message : '搜索失败';
+      msg(errorMessage);
     }
   };
 
@@ -148,16 +150,19 @@ export default function Home() {
       const music = musicList[playlist]?.item[playid];
       if (music && audioRef.current) {
         if (!music.url) {
-            ajaxUrl(music).then(url => {
-                if (url && url !== 'err') {
-                    music.url = url;
+            ajaxUrl(music, bitRate).then(result => {
+                if (result.url && result.url !== 'err') {
+                    music.url = result.url;
                     if (audioRef.current) {
-                      audioRef.current.src = url;
+                      audioRef.current.src = result.url;
                       audioRef.current.play();
                     }
                 } else {
                     msg('歌曲链接获取失败');
                 }
+            }).catch(error => {
+                const errorMessage = error instanceof Error ? error.message : '歌曲链接获取失败';
+                msg(errorMessage);
             });
         } else {
             audioRef.current.src = music.url;
@@ -165,7 +170,7 @@ export default function Home() {
         }
       }
     }
-  }, [playlist, playid, musicList, audioRef]);
+  }, [playlist, playid, musicList, audioRef, bitRate]);
 
   const currentMusic = playlist !== undefined ? musicList[playlist]?.item[playid] : null;
 

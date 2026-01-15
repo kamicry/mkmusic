@@ -12,8 +12,10 @@ const LyricPanel: React.FC = () => {
   useEffect(() => {
     const music = playlist !== undefined ? musicList[playlist]?.item[playid] : null;
     if (music) {
-      ajaxLyric(music).then((lrc) => {
-        setLyrics(parseLyric(lrc));
+      ajaxLyric(music).then((result) => {
+        // Use the lyric field from the new API response
+        const lrcText = result.lyric || '';
+        setLyrics(parseLyric(lrcText));
         setCurrentIndex(-1);
       }).catch(() => {
         setLyrics([{ time: 0, text: '歌词加载失败' }]);
