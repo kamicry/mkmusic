@@ -2,16 +2,19 @@ import { Playlist } from '../types';
 
 export const defaultMusicList: Playlist[] = [
   {
+    id: "search",
     name: "搜索结果",
     cover: "",
     item: []
   },
   {
+    id: "playing",
     name: "正在播放",
     cover: "",
     item: []
   },
   {
+    id: "history",
     name: "播放历史",
     cover: "/images/history.png",
     item: []
@@ -59,6 +62,7 @@ export const defaultMusicList: Playlist[] = [
     item: []
   },
   {
+    id: "custom",
     name: "自定义列表",
     cover: "https://p3.music.126.net/34YW1QtKxJ_3YnX9ZzKhzw==/2946691234868155.jpg",
     item: [

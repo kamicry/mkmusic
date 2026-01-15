@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useRef, useEffect } from 'react';
-import { Music, Playlist, OrderMode } from '../types';
+import { Music, Playlist, OrderMode, Config } from '../types';
 
 interface PlayerContextType {
   audioRef: React.RefObject<HTMLAudioElement | null>;
@@ -15,18 +15,22 @@ interface PlayerContextType {
   wd: string;
   source: string;
   loadPage: number;
+  lyric: { [key: number]: string } | null;
+  lastLyric: number;
   
   setPlaylist: (id: number | undefined) => void;
   setPlayid: (id: number) => void;
   setDislist: (id: number) => void;
   setOrder: (order: OrderMode) => void;
   setPaused: (paused: boolean) => void;
-  setErrCount: (count: number) => void;
+  setErrCount: React.Dispatch<React.SetStateAction<number>>;
   setVolume: (volume: number) => void;
   setMusicList: React.Dispatch<React.SetStateAction<Playlist[]>>;
   setWd: (wd: string) => void;
   setSource: (source: string) => void;
   setLoadPage: (page: number) => void;
+  setLyric: (lyric: { [key: number]: string } | null) => void;
+  setLastLyric: (lyric: number) => void;
 }
 
 const PlayerContext = createContext<PlayerContextType | undefined>(undefined);
@@ -45,6 +49,8 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [source, setSource] = useState<string>('netease');
   const [loadPage, setLoadPage] = useState<number>(1);
   const [musicList, setMusicList] = useState<Playlist[]>([]);
+  const [lyric, setLyric] = useState<{ [key: number]: string } | null>(null);
+  const [lastLyric, setLastLyric] = useState<number>(0);
 
   useEffect(() => {
     const checkMobile = () => {
@@ -74,6 +80,8 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     wd,
     source,
     loadPage,
+    lyric,
+    lastLyric,
     setPlaylist,
     setPlayid,
     setDislist,
@@ -85,6 +93,8 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setWd,
     setSource,
     setLoadPage,
+    setLyric,
+    setLastLyric,
   };
 
   return <PlayerContext.Provider value={value}>{children}</PlayerContext.Provider>;

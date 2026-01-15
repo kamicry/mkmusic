@@ -14,11 +14,10 @@ export const usePlayerControls = () => {
     setOrder,
     musicList,
     setMusicList,
-    dislist,
-    config
+    dislist
   } = usePlayer();
 
-  const { playMusic, playNextSong } = useAudio();
+  const { nextMusic, playMusic } = useAudio();
 
   // Toggle play/pause
   const togglePlayPause = () => {
@@ -62,12 +61,11 @@ export const usePlayerControls = () => {
     }
     
     playMusic(playlist, prevId);
-    setPlayid(prevId);
   };
 
   // Play next song
   const playNext = () => {
-    playNextSong();
+    nextMusic();
   };
 
   // Change order mode
@@ -138,7 +136,6 @@ export const usePlayerControls = () => {
       if (musicList[1].item[i].id === tmpMusic.id && musicList[1].item[i].source === tmpMusic.source) {
         tmpid = i;
         playMusic(1, tmpid);
-        setPlayid(tmpid);
         return;
       }
     }
@@ -154,7 +151,6 @@ export const usePlayerControls = () => {
     }
 
     playMusic(1, tmpid);
-    setPlayid(tmpid);
   };
 
   const handleRegularListClick = (no: number) => {
@@ -172,7 +168,6 @@ export const usePlayerControls = () => {
     }
 
     playMusic(dislist, no);
-    setPlayid(no);
   };
 
   return {
