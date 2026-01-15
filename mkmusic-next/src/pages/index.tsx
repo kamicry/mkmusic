@@ -240,7 +240,20 @@ export default function Home() {
       <audio ref={audioRef} style={{ display: 'none' }} />
 
       {showSearch && (
-        <div className="layer-anim layui-layer layui-layer-page" style={{ zIndex: 19891015, width: '450px', top: '100px', left: '50%', marginLeft: '-225px', position: 'fixed' }}>
+        <div 
+          className="layer-anim layui-layer layui-layer-page"
+          style={{ 
+            zIndex: 19891015, 
+            width: '90%',
+            maxWidth: '450px',
+            top: '50%',
+            left: '50%',
+            marginLeft: '-45%',
+            marginTop: '-150px',
+            position: 'fixed',
+            transform: 'translate(-50%, -50%)'
+          }}
+        >
           <div className="layui-layer-content">
             <SearchPanel 
               onSearch={handleSearch} 
