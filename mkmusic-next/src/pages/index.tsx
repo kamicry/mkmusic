@@ -31,12 +31,22 @@ export default function Home() {
 
   const { msg } = useLayer();
   const [showSearch, setShowSearch] = useState(false);
-  const [view, setView] = useState<'list' | 'sheet'>('list');
+  const [view, setView] = useState<'list' | 'sheet' | 'player'>('list');
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
+    // Check if mobile device
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 900);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
     setMusicList(defaultMusicList);
     // Load default playlist
     loadPlaylist("3778678", 3); // 云音乐热歌榜
+    
+    return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
   const loadPlaylist = async (lid: string, index: number) => {
@@ -191,33 +201,37 @@ export default function Home() {
             onShowList={(type) => {
                 if (type === 'playing') { setDislist(1); setView('list'); }
                 else if (type === 'sheet') setView('sheet');
+                else if (type === 'player') setView('player');
             }}
+            activeView={view}
           />
           
-          <DataArea>
-            {view === 'sheet' && (
-              <div id="sheet" className="data-box">
-                {musicList.slice(3).map((sheet, index) => (
-                  <div key={index} className="sheet-item" onClick={() => { setDislist(index + 3); setView('list'); }}>
-                    <div className="sheet-cover-box">
-                      <img src={sheet.cover || 'images/player_cover.png'} className="sheet-cover" alt="sheet cover" />
+          <div style={{ display: (isMobile && view === 'player') ? 'none' : 'block' }}>
+            <DataArea>
+              {view === 'sheet' && (
+                <div id="sheet" className="data-box">
+                  {musicList.slice(3).map((sheet, index) => (
+                    <div key={index} className="sheet-item" onClick={() => { setDislist(index + 3); setView('list'); }}>
+                      <div className="sheet-cover-box">
+                        <img src={sheet.cover || 'images/player_cover.png'} className="sheet-cover" alt="sheet cover" />
+                      </div>
+                      <span className="sheet-name">{sheet.name}</span>
                     </div>
-                    <span className="sheet-name">{sheet.name}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-            
-            {view === 'list' && (
-              <MusicList 
-                list={musicList[dislist]?.item || []} 
-                currentPlayId={playlist === dislist ? playid : undefined}
-                onItemClick={handleItemClick}
-              />
-            )}
-          </DataArea>
+                  ))}
+                </div>
+              )}
+              
+              {view === 'list' && (
+                <MusicList 
+                  list={musicList[dislist]?.item || []} 
+                  currentPlayId={playlist === dislist ? playid : undefined}
+                  onItemClick={handleItemClick}
+                />
+              )}
+            </DataArea>
+          </div>
 
-          <MainPlayer />
+          <MainPlayer style={{ display: (isMobile && view !== 'player') ? 'none' : 'block' }} />
         </div>
       </div>
 

@@ -39,6 +39,7 @@ $(function(){
     if(rem.isMobile) {  // 加了滚动条插件和没加滚动条插件所操作的对象是不一样的
         rem.sheetList = $("#sheet");
         rem.mainList = $("#main-list");
+        $("#player").hide();  // 移动端初始隐藏播放器
     } else {
         // 滚动条初始化(只在非移动端启用滚动条控件)
         $("#main-list,#sheet").mCustomScrollbar({
@@ -602,27 +603,27 @@ function addListbar(types) {
 // 将时间格式化为 00:00 的格式
 // 参数：原始时间
 function formatTime(time){    
-	var hour,minute,second;
-	hour = String(parseInt(time/3600,10));
-	if(hour.length == 1) hour='0' + hour;
-	
-	minute=String(parseInt((time%3600)/60,10));
-	if(minute.length == 1) minute='0'+minute;
-	
-	second=String(parseInt(time%60,10));
-	if(second.length == 1) second='0'+second;
-	
-	if(hour > 0) {
-	    return hour + ":" + minute + ":" + second;
-	} else {
-	    return minute + ":" + second;
-	}
+    var hour,minute,second;
+    hour = String(parseInt(time/3600,10));
+    if(hour.length == 1) hour='0' + hour;
+    
+    minute=String(parseInt((time%3600)/60,10));
+    if(minute.length == 1) minute='0'+minute;
+    
+    second=String(parseInt(time%60,10));
+    if(second.length == 1) second='0'+second;
+    
+    if(hour > 0) {
+        return hour + ":" + minute + ":" + second;
+    } else {
+        return minute + ":" + second;
+    }
 }
 
 // url编码
 // 输入参数：待编码的字符串
 function urlEncode(String) {
-    return encodeURIComponent(String).replace(/'/g,"%27").replace(/"/g,"%22");	
+    return encodeURIComponent(String).replace(/'/g,"%27").replace(/"/g,"%22");    
 }
 
 // 在 ajax 获取了音乐的信息后再进行更新
@@ -868,7 +869,7 @@ function playerSavedata(key, data) {
     data = JSON.stringify(data);
     // 存储，IE6~7 不支持HTML5本地存储
     if (window.localStorage) {
-        localStorage.setItem(key, data);	
+        localStorage.setItem(key, data);    
     }
 }
 

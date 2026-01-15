@@ -120,7 +120,6 @@
     
     /*隐藏右侧歌词及封面*/
     .player {
-        display: none;
         width: 100%;
     }
     .cover {
