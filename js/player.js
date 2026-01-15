@@ -180,9 +180,9 @@ function updateProgress(){
     // 暂停状态不管
     if(rem.paused !== false) return true;
     // 同步进度条
-	music_bar.goto(rem.audio[0].currentTime / rem.audio[0].duration);
-    // 同步歌词显示	
-	scrollLyric(rem.audio[0].currentTime);
+    music_bar.goto(rem.audio[0].currentTime / rem.audio[0].duration);
+    // 同步歌词显示    
+    scrollLyric(rem.audio[0].currentTime);
 }
 
 // 显示的列表中的某一项点击后的处理函数
@@ -333,6 +333,7 @@ function play(music) {
     music_bar.goto(0);  // 进度条强制归零
     changeCover(music);    // 更新封面展示
     ajaxLyric(music, lyricCallback);     // ajax加载歌词
+    $(".music-info-display").text(music.name + " - " + music.artist); // 更新右下角歌曲信息
     music_bar.lock(false);  // 取消进度条锁定
 }
 

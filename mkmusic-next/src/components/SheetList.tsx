@@ -1,8 +1,8 @@
 import React from 'react';
-import { usePlayer } from '../contexts/PlayerContext';
+import { usePlayerContext } from '../contexts/PlayerContext';
 
 const SheetList: React.FC = () => {
-  const { musicList } = usePlayer();
+  const { musicList } = usePlayerContext();
 
   // Filter out system playlists (search results, playing, history)
   const customPlaylists = musicList.slice(3);
