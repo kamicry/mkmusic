@@ -97,3 +97,5 @@ export const usePlayerContext = () => {
   }
   return context;
 };
+
+export const usePlayer = usePlayerContext;
