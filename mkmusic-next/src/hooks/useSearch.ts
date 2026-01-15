@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { usePlayer } from '../contexts/PlayerContext';
+import { useLayer } from './useLayer';
 
 export const useSearch = () => {
   const {
@@ -14,27 +15,34 @@ export const useSearch = () => {
     source
   } = usePlayer();
 
+  const { msg, close } = useLayer();
   const [isSearching, setIsSearching] = useState<boolean>(false);
 
   // Perform search
   const performSearch = async (searchTerm: string, searchSource: string = 'netease', page: number = 1) => {
     if (!searchTerm.trim()) {
-      alert('搜索内容不能为空');
+      msg('搜索内容不能为空', { anim: 6 });
       return;
     }
 
+    let loadingIndex: any;
+    if (page === 1) {
+      loadingIndex = msg('搜索中', { icon: 16, shade: 0.01, time: 0 });
+    }
+    
     setIsSearching(true);
 
     try {
       const response = await fetch(
-        `${config.api}?types=search&count=${config.loadcount}&source=${searchSource}&pages=${page}&name=${encodeURIComponent(searchTerm)}`
+        `${config.api}?types=search&count=${config.loadcount}&source=${searchSource}&pages=${page}&name=${encodeURIComponent(searchTerm)}`,
+        { signal: AbortSignal.timeout(10000) }
       );
       const data = await response.json();
 
       if (page === 1) {
         // First page - clear existing results
         if (data.length === 0) {
-          alert('没有找到相关歌曲');
+          msg('没有找到相关歌曲', { anim: 6 });
           return;
         }
 
@@ -96,9 +104,12 @@ export const useSearch = () => {
 
     } catch (error) {
       console.error('Search failed:', error);
-      alert('搜索结果获取失败');
+      msg('搜索结果获取失败', { anim: 6 });
     } finally {
       setIsSearching(false);
+      if (loadingIndex !== undefined) {
+        close(loadingIndex);
+      }
     }
   };
 

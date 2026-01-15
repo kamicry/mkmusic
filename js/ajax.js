@@ -12,8 +12,12 @@ function ajaxSearch() {
         return false;
     }
     
+    if(rem.searching === true) return false;    // 正在搜索，跳过
+    rem.searching = true;   // 标记正在搜索
+    
+    var tmpLoading = -1;
     if(rem.loadPage == 1) { // 弹出搜索提示
-        var tmpLoading = layer.msg('搜索中', {icon: 16,shade: 0.01});
+        tmpLoading = layer.msg('搜索中', {icon: 16, shade: 0.01, time: 0});
     }
     
     $.ajax({
@@ -21,8 +25,10 @@ function ajaxSearch() {
         url: mkPlayer.api, 
         data: "types=search&count=" + mkPlayer.loadcount + "&source=" + rem.source + "&pages=" + rem.loadPage + "&name=" + rem.wd,
         dataType : "jsonp",
+        timeout: 10000,     // 10秒超时
         complete: function(XMLHttpRequest, textStatus) {
-            if(tmpLoading) layer.close(tmpLoading);    // 关闭加载中动画
+            rem.searching = false;  // 搜索完成
+            if(tmpLoading != -1) layer.close(tmpLoading);    // 关闭加载中动画
         },  // complete
         success: function(jsonData){
             
@@ -319,12 +325,13 @@ function ajaxLyric(music, callback) {
 // 参数 用户的网易云 id
 function ajaxUserList(uid)
 {
-    var tmpLoading = layer.msg('加载中...', {icon: 16,shade: 0.01});
+    var tmpLoading = layer.msg('加载中...', {icon: 16, shade: 0.01, time: 0});
     $.ajax({
         type: mkPlayer.method,
         url: mkPlayer.api,
         data: "types=userlist&uid=" + uid,
         dataType : "jsonp",
+        timeout: 10000,     // 10秒超时
         complete: function(XMLHttpRequest, textStatus) {
             if(tmpLoading) layer.close(tmpLoading);    // 关闭加载中动画
         },  // complete
