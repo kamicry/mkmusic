@@ -12,7 +12,14 @@ export const useAudio = () => {
     musicList,
     order,
     setPlayid,
+    setPlaylist,
+    musicList: fullMusicList
   } = usePlayerContext();
+
+  const playMusic = useCallback((listId: number, musicId: number) => {
+    setPlaylist(listId);
+    setPlayid(musicId);
+  }, [setPlaylist, setPlayid]);
 
   const nextMusic = useCallback(() => {
     const currentList = musicList[1]?.item; // Playing list
@@ -38,7 +45,7 @@ export const useAudio = () => {
   }, [order, audioRef, nextMusic]);
 
   const handleError = useCallback(() => {
-    setErrCount((prev) => {
+    setErrCount((prev: number) => {
       if (prev > 10) {
         // layer.msg('似乎出了点问题~播放已停止');
         return 0;
@@ -75,5 +82,5 @@ export const useAudio = () => {
     }
   }, [volume, audioRef]);
 
-  return { nextMusic };
+  return { nextMusic, playMusic };
 };

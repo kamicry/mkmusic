@@ -199,7 +199,7 @@ export default function Home() {
           <BtnBar 
             onSearchClick={() => setShowSearch(true)} 
             onShowList={(type) => {
-                if (type === 'playing') { setDislist(1); setView('list'); }
+                if (type === 'list') { setDislist(1); setView('list'); }
                 else if (type === 'sheet') setView('sheet');
                 else if (type === 'player') setView('player');
             }}

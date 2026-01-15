@@ -4,7 +4,6 @@ import { useLayer } from './useLayer';
 
 export const useSearch = () => {
   const {
-    config,
     setWd,
     setSource,
     setLoadPage,
@@ -33,8 +32,10 @@ export const useSearch = () => {
     setIsSearching(true);
 
     try {
+      // 使用固定的 API 配置
+      const apiUrl = '/api/search';
       const response = await fetch(
-        `${config.api}?types=search&count=${config.loadcount}&source=${searchSource}&pages=${page}&name=${encodeURIComponent(searchTerm)}`,
+        `${apiUrl}?name=${encodeURIComponent(searchTerm)}&source=${searchSource}&page=${page}`,
         { signal: AbortSignal.timeout(10000) }
       );
       const data = await response.json();
@@ -96,7 +97,8 @@ export const useSearch = () => {
       }
 
       // Add load more indicator if more results might be available
-      if (newItems.length >= config.loadcount) {
+      const loadcount = 20; // 默认每页加载数量
+      if (newItems.length >= loadcount) {
         addListBar('more');
       } else {
         addListBar('nomore');

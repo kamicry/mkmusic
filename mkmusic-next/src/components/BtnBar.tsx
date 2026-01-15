@@ -3,7 +3,7 @@ import { usePlayerContext } from '../contexts/PlayerContext';
 
 interface BtnBarProps {
   onSearchClick: () => void;
-  onShowList: (type: 'playing' | 'sheet' | 'player') => void;
+  onShowList: (type: 'list' | 'sheet' | 'player') => void;
   activeView: 'list' | 'sheet' | 'player';
 }
 
@@ -22,7 +22,7 @@ const BtnBar: React.FC<BtnBarProps> = ({ onSearchClick, onShowList, activeView }
           className={`btn ${activeView === 'list' ? 'active' : ''}`} 
           data-action="playing" 
           title="正在播放列表" 
-          onClick={() => onShowList('playing')}
+          onClick={() => onShowList('list')}
         >
           正在播放
         </span>
