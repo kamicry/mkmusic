@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useRef, useEffect } from 'react';
-import { Music, Playlist, OrderMode, Config } from '../types';
+import { Music, Playlist, OrderMode, Config, LyricLine } from '../types';
 import { API_CONFIG, BitRate } from '../config/api.config';
 
 interface PlayerContextType {
@@ -21,6 +21,10 @@ interface PlayerContextType {
   bitRate: BitRate;
   currentPage: number;
   totalPages: number;
+  showTranslation: boolean;
+  originalLyrics: LyricLine[];
+  translatedLyrics: LyricLine[];
+  hasTranslation: boolean;
   
   setPlaylist: (id: number | undefined) => void;
   setPlayid: (id: number) => void;
@@ -38,6 +42,10 @@ interface PlayerContextType {
   setBitRate: (bitRate: BitRate) => void;
   setCurrentPage: (page: number) => void;
   setTotalPages: (pages: number) => void;
+  setShowTranslation: (show: boolean) => void;
+  setOriginalLyrics: (lyrics: LyricLine[]) => void;
+  setTranslatedLyrics: (lyrics: LyricLine[]) => void;
+  setHasTranslation: (has: boolean) => void;
 }
 
 const PlayerContext = createContext<PlayerContextType | undefined>(undefined);
@@ -61,6 +69,10 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [bitRate, setBitRate] = useState<BitRate>(API_CONFIG.defaultBitRate);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
+  const [showTranslation, setShowTranslation] = useState<boolean>(false);
+  const [originalLyrics, setOriginalLyrics] = useState<LyricLine[]>([]);
+  const [translatedLyrics, setTranslatedLyrics] = useState<LyricLine[]>([]);
+  const [hasTranslation, setHasTranslation] = useState<boolean>(false);
 
   useEffect(() => {
     const checkMobile = () => {
@@ -95,6 +107,10 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     bitRate,
     currentPage,
     totalPages,
+    showTranslation,
+    originalLyrics,
+    translatedLyrics,
+    hasTranslation,
     setPlaylist,
     setPlayid,
     setDislist,
@@ -111,6 +127,10 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setBitRate,
     setCurrentPage,
     setTotalPages,
+    setShowTranslation,
+    setOriginalLyrics,
+    setTranslatedLyrics,
+    setHasTranslation,
   };
 
   return <PlayerContext.Provider value={value}>{children}</PlayerContext.Provider>;
