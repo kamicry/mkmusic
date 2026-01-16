@@ -47,12 +47,12 @@ const MusicList: React.FC<MusicListProps> = ({ list, currentPlayId, onItemClick,
             data-no={index}
           >
             <span className="list-num" onClick={() => onItemClick(index)}>{index + 1}</span>
-            <span className="music-name" onClick={() => onItemClick(index)}>{item.name}</span>
-            <span className="music-artist" onClick={() => onItemClick(index)}>{item.artist}</span>
-            <span className="music-album" onClick={() => onItemClick(index)}>{item.album}</span>
+            <span className="music-name" onClick={() => onItemClick(index)} title={item.name}>{item.name}</span>
+            <span className="music-artist" onClick={() => onItemClick(index)} title={item.artist}>{item.artist}</span>
+            <span className="music-album" onClick={() => onItemClick(index)} title={item.album}>{item.album}</span>
             {onInfoClick && (
-              <span 
-                className="music-info-btn" 
+              <span
+                className="music-info-btn"
                 onClick={(e) => handleInfoClick(e, index)}
                 title="查看详情"
               >
