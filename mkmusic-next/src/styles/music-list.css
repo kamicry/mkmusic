@@ -25,6 +25,7 @@
   cursor: pointer;
   position: relative;
   padding: 0 10px;
+  padding-right: 40px;
   box-sizing: border-box;
   gap: 10px;
 }
@@ -91,6 +92,10 @@
 
 /* Info button */
 .music-info-btn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -102,6 +107,7 @@
   border-radius: 50%;
   background-color: rgba(255, 255, 255, 0.1);
   transition: all 0.2s ease;
+  z-index: 10;
 }
 
 .music-info-btn:hover {
@@ -113,6 +119,7 @@
 @media screen and (max-width: 900px) {
   .list-item {
     padding: 0 8px;
+    padding-right: 35px;
     gap: 8px;
   }
 }
@@ -121,6 +128,7 @@
   .list-item {
     gap: 6px;
     padding: 0 6px;
+    padding-right: 30px;
   }
 
   /* Hide album on small screens */
@@ -131,7 +139,7 @@
   /* Adjust flex ratios and widths */
   .music-name {
     flex: 2;
-    max-width: 55%;
+    max-width: 60%;
     min-width: 80px;
   }
 
@@ -141,6 +149,10 @@
     min-width: 50px;
     font-size: 12px;
   }
+
+  .music-info-btn {
+    right: 6px;
+  }
 }
 
 @media screen and (max-width: 400px) {
@@ -148,6 +160,7 @@
     height: 45px;
     line-height: 45px;
     font-size: 13px;
+    padding-right: 25px;
   }
 
   .music-name {
@@ -167,5 +180,6 @@
     width: 20px;
     height: 20px;
     font-size: 10px;
+    right: 5px;
   }
 }
