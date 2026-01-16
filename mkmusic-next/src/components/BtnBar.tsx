@@ -8,6 +8,13 @@ interface BtnBarProps {
 }
 
 const BtnBar: React.FC<BtnBarProps> = ({ onSearchClick, onShowList, activeView }) => {
+  const { dislist, setDislist } = usePlayerContext();
+
+  const handleShowPlaying = () => {
+    setDislist(1); // 正在播放列表在 index 1
+    onShowList('list');
+  };
+
   return (
     <div className="btn-bar">
       <div className="btn-box" id="btn-area">
@@ -19,10 +26,10 @@ const BtnBar: React.FC<BtnBarProps> = ({ onSearchClick, onShowList, activeView }
           播放器
         </span>
         <span 
-          className={`btn ${activeView === 'list' ? 'active' : ''}`} 
+          className={`btn ${activeView === 'list' && dislist === 1 ? 'active' : ''}`} 
           data-action="playing" 
           title="正在播放列表" 
-          onClick={() => onShowList('list')}
+          onClick={handleShowPlaying}
         >
           正在播放
         </span>

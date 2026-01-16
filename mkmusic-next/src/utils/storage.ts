@@ -1,6 +1,8 @@
+import { Music } from '../types';
+
 // LocalStorage utility functions for player data persistence
 
-export const playerSavedata = (key: string, value: any): void => {
+export const playerSavedata = (key: string, value: unknown): void => {
   try {
     if (typeof window !== 'undefined' && window.localStorage) {
       localStorage.setItem(`mkplayer_${key}`, JSON.stringify(value));
@@ -10,7 +12,7 @@ export const playerSavedata = (key: string, value: any): void => {
   }
 };
 
-export const playerReaddata = (key: string): any => {
+export const playerReaddata = (key: string): unknown => {
   try {
     if (typeof window !== 'undefined' && window.localStorage) {
       const item = localStorage.getItem(`mkplayer_${key}`);
@@ -33,9 +35,84 @@ export const playerRemovedata = (key: string): void => {
   }
 };
 
+// Play history management functions
+export const savePlayHistory = (music: Music): void => {
+  if (typeof window === 'undefined' || !window.localStorage) {
+    return;
+  }
+
+  try {
+    const historyKey = 'history';
+    const existingHistory = (playerReaddata('history') as Music[]) || [];
+    
+    // Add playedAt timestamp
+    const musicWithTimestamp = {
+      ...music,
+      playedAt: Date.now()
+    };
+
+    // Remove duplicate (same id and source)
+    const filteredHistory = existingHistory.filter((item: Music) => 
+      !(item.id === music.id && item.source === music.source)
+    );
+
+    // Add new music to the beginning
+    const newHistory = [musicWithTimestamp, ...filteredHistory];
+
+    // Keep only the latest 100 records
+    const limitedHistory = newHistory.slice(0, 100);
+
+    playerSavedata(historyKey, limitedHistory);
+  } catch (error) {
+    console.error('Failed to save play history:', error);
+  }
+};
+
+export const getPlayHistory = (): Music[] => {
+  if (typeof window === 'undefined' || !window.localStorage) {
+    return [];
+  }
+
+  try {
+    const history = (playerReaddata('history') as Music[]) || [];
+    return history;
+  } catch (error) {
+    console.error('Failed to get play history:', error);
+    return [];
+  }
+};
+
+export const clearPlayHistory = (): void => {
+  if (typeof window === 'undefined' || !window.localStorage) {
+    return;
+  }
+
+  try {
+    playerRemovedata('history');
+  } catch (error) {
+    console.error('Failed to clear play history:', error);
+  }
+};
+
+export const removePlayHistoryItem = (musicId: string, source: string): void => {
+  if (typeof window === 'undefined' || !window.localStorage) {
+    return;
+  }
+
+  try {
+    const history = getPlayHistory();
+    const filteredHistory = history.filter(item => 
+      !(item.id === musicId && item.source === source)
+    );
+    playerSavedata('history', filteredHistory);
+  } catch (error) {
+    console.error('Failed to remove play history item:', error);
+  }
+};
+
 // Initialize player data from localStorage
-export const initPlayerData = (): Record<string, any> => {
-  const data: Record<string, any> = {};
+export const initPlayerData = (): Record<string, unknown> => {
+  const data: Record<string, unknown> = {};
 
   // Only run on client side
   if (typeof window === 'undefined') {

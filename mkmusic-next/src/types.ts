@@ -9,6 +9,7 @@ export interface Music {
   lyric_id: string;
   pic: string | null;
   url: string | null;
+  playedAt?: number;
 }
 
 export interface Playlist {

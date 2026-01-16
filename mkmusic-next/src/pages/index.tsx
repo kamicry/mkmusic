@@ -12,7 +12,7 @@ import { usePlayerContext } from '../contexts/PlayerContext';
 import { defaultMusicList } from '../utils/musicList';
 import { ajaxSearch, ajaxUrl, ajaxPlaylist, ajaxPic } from '../utils/api';
 import { useLayer } from '../hooks/useLayer';
-import { Music, Playlist } from '../types';
+import { Music } from '../types';
 
 export default function Home() {
   const {
@@ -29,6 +29,10 @@ export default function Home() {
     setSource,
     setLoadPage,
     bitRate,
+    playHistory,
+    addToPlayHistory,
+    setPlayHistory,
+    clearPlayHistoryCtx,
   } = usePlayerContext();
 
   const { msg } = useLayer();
@@ -46,44 +50,69 @@ export default function Home() {
     checkMobile();
     window.addEventListener('resize', checkMobile);
     
+    // 初始化时只设置默认歌单列表，不依赖 loadPlaylist
     setMusicList(defaultMusicList);
-    // Load default playlist
-    loadPlaylist("3778678", 3); // 云音乐热歌榜
     
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  const loadPlaylist = async (lid: string, index: number) => {
-    try {
-      const data = await ajaxPlaylist(lid);
-      setMusicList(prev => {
-        const newList = [...prev];
-        newList[index] = {
-          id: lid,
-          name: data.playlist.name,
-          cover: data.playlist.coverImgUrl + "?param=200y200",
-          item: data.playlist.tracks.map((track: any) => ({
-            id: track.id,
-            name: track.name,
-            artist: track.ar[0].name,
-            album: track.al.name,
-            source: "netease",
-            url_id: track.id,
-            pic_id: null,
-            lyric_id: track.id,
-            pic: track.al.picUrl + "?param=300y300",
-            url: null
-          }))
-        };
-        return newList;
-      });
-      if (index === 3) { // Default list to show
-          setDislist(3);
+  // 单独加载默认播放列表的 useEffect，不依赖其他状态
+  useEffect(() => {
+    const loadDefaultPlaylist = async () => {
+      try {
+        const data = await ajaxPlaylist("3778678"); // 云音乐热歌榜
+        setMusicList(prev => {
+          const newList = [...prev];
+          newList[3] = {
+            id: "3778678",
+            name: data.playlist.name,
+            cover: data.playlist.coverImgUrl + "?param=200y200",
+            item: data.playlist.tracks.map((track: any) => ({
+              id: track.id,
+              name: track.name,
+              artist: track.ar[0].name,
+              album: track.al.name,
+              source: "netease",
+              url_id: track.id,
+              pic_id: null,
+              lyric_id: track.id,
+              pic: track.al.picUrl + "?param=300y300",
+              url: null
+            }))
+          };
+          return newList;
+        });
+      } catch (error) {
+        console.error('Failed to load default playlist', error);
       }
-    } catch (error) {
-      console.error('Failed to load playlist', error);
+    };
+
+    loadDefaultPlaylist();
+  }, []);
+
+  // Initialize and update play history in musicList when playHistory changes
+  useEffect(() => {
+    setMusicList(prev => {
+      const newList = [...prev];
+      // Add or update play history playlist at index 2
+      newList[2] = {
+        id: 'play_history',
+        name: '播放历史',
+        cover: 'images/player_cover.png',
+        item: playHistory,
+        creatorName: ''
+      };
+      return newList;
+    });
+  }, [playHistory]); // 只依赖 playHistory，避免循环依赖
+
+  // Set initial view to show play history after component mounts
+  useEffect(() => {
+    if (musicList.length > 0) {
+      setDislist(1); // Show "正在播放" by default
+      setView('list');
     }
-  };
+  }, [musicList.length, setDislist]);
 
   const handleSearch = async (wd: string, source: string, page: number = 1) => {
     setWd(wd);
@@ -178,6 +207,8 @@ export default function Home() {
                       audioRef.current.src = result.url;
                       audioRef.current.play();
                     }
+                    // Add to play history when music starts playing
+                    addToPlayHistory(music);
                 } else {
                     msg('歌曲链接获取失败');
                 }
@@ -188,10 +219,12 @@ export default function Home() {
         } else {
             audioRef.current.src = music.url;
             audioRef.current.play();
+            // Add to play history when music starts playing
+            addToPlayHistory(music);
         }
       }
     }
-  }, [playlist, playid, musicList, audioRef, bitRate, setMusicList]);
+  }, [playlist, playid, musicList, audioRef, bitRate, setMusicList, addToPlayHistory, msg]);
 
   const currentMusic = playlist !== undefined ? musicList[playlist]?.item[playid] : null;
 
@@ -236,14 +269,39 @@ export default function Home() {
             <DataArea>
               {view === 'sheet' && (
                 <div id="sheet" className="data-box">
-                  {musicList.slice(3).map((sheet, index) => (
-                    <div key={index} className="sheet-item" onClick={() => { setDislist(index + 3); setView('list'); }}>
+                  <div className="sheet-section">
+                    <h3>播放历史</h3>
+                    <div className="sheet-item" onClick={() => { setDislist(2); setView('list'); }}>
                       <div className="sheet-cover-box">
-                        <img src={sheet.cover || 'images/player_cover.png'} className="sheet-cover" alt="sheet cover" />
+                        <img src={playHistory.length > 0 && playHistory[0].pic ? playHistory[0].pic : 'images/player_cover.png'} className="sheet-cover" alt="播放历史" />
                       </div>
-                      <span className="sheet-name">{sheet.name}</span>
+                      <span className="sheet-name">播放历史 ({playHistory.length})</span>
+                      {playHistory.length > 0 && (
+                        <button 
+                          className="clear-history-btn" 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (window.confirm('确定要清空所有播放历史吗？')) {
+                              clearPlayHistoryCtx();
+                            }
+                          }}
+                        >
+                          清空
+                        </button>
+                      )}
                     </div>
-                  ))}
+                  </div>
+                  <div className="sheet-section">
+                    <h3>推荐歌单</h3>
+                    {musicList.slice(3).map((sheet, index) => (
+                      <div key={index} className="sheet-item" onClick={() => { setDislist(index + 3); setView('list'); }}>
+                        <div className="sheet-cover-box">
+                          <img src={sheet.cover || 'images/player_cover.png'} className="sheet-cover" alt="sheet cover" />
+                        </div>
+                        <span className="sheet-name">{sheet.name}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
               
@@ -253,6 +311,7 @@ export default function Home() {
                   currentPlayId={playlist === dislist ? playid : undefined}
                   onItemClick={handleItemClick}
                   onInfoClick={handleInfoClick}
+                  dislist={dislist}
                 />
               )}
             </DataArea>
