@@ -56,8 +56,8 @@
 
 /* Music name */
 .music-name {
-  flex: 3;
-  max-width: 40%;
+  flex: 2;
+  max-width: 35%;
   min-width: 100px;
   white-space: nowrap;
   overflow: hidden;
@@ -67,9 +67,9 @@
 
 /* Artist name */
 .music-artist {
-  flex: 2;
-  max-width: 30%;
-  min-width: 80px;
+  flex: 1.5;
+  max-width: 25%;
+  min-width: 70px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -79,9 +79,9 @@
 
 /* Album name */
 .music-album {
-  flex: 2;
-  max-width: 30%;
-  min-width: 80px;
+  flex: 1.5;
+  max-width: 25%;
+  min-width: 70px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -115,10 +115,6 @@
     padding: 0 8px;
     gap: 8px;
   }
-  
-  .music-info-btn {
-    display: none;
-  }
 }
 
 @media screen and (max-width: 620px) {
@@ -134,15 +130,15 @@
 
   /* Adjust flex ratios and widths */
   .music-name {
-    flex: 3;
-    max-width: 60%;
+    flex: 2;
+    max-width: 55%;
     min-width: 80px;
   }
 
   .music-artist {
-    flex: 2;
-    max-width: 40%;
-    min-width: 60px;
+    flex: 1.5;
+    max-width: 35%;
+    min-width: 50px;
     font-size: 12px;
   }
 }
@@ -153,17 +149,23 @@
     line-height: 45px;
     font-size: 13px;
   }
-  
+
   .music-name {
     font-size: 13px;
   }
-  
+
   .music-artist {
     font-size: 11px;
   }
-  
+
   .list-num {
     width: 25px;
     font-size: 12px;
+  }
+
+  .music-info-btn {
+    width: 20px;
+    height: 20px;
+    font-size: 10px;
   }
 }
