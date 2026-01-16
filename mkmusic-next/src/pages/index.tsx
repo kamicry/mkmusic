@@ -64,9 +64,10 @@ export default function Home() {
         };
         return newList;
       });
-      if (index === 3) { // Default list to show
-          setDislist(3);
-      }
+      // 移除自动设置 dislist 的逻辑，避免与默认显示冲突
+      // if (index === 3) {
+      //     setDislist(3);
+      // }
     } catch (error) {
       console.error('Failed to load playlist', error);
     }
@@ -107,7 +108,7 @@ export default function Home() {
   // Set initial view to show play history after component mounts
   useEffect(() => {
     if (musicList.length > 0) {
-      setDislist(2); // Show play history by default
+      setDislist(1); // Show "正在播放" by default
       setView('list');
     }
   }, [musicList.length, setDislist]);

@@ -10,8 +10,13 @@ interface BtnBarProps {
 const BtnBar: React.FC<BtnBarProps> = ({ onSearchClick, onShowList, activeView }) => {
   const { dislist, setDislist, playHistory, clearPlayHistoryCtx } = usePlayerContext();
 
+  const handleShowPlaying = () => {
+    setDislist(1); // 正在播放列表在 index 1
+    onShowList('list');
+  };
+
   const handleShowPlayHistory = () => {
-    setDislist(2); // Play history is at index 2
+    setDislist(2); // 播放历史在 index 2
     onShowList('list');
   };
 
@@ -35,12 +40,12 @@ const BtnBar: React.FC<BtnBarProps> = ({ onSearchClick, onShowList, activeView }
           className={`btn ${activeView === 'list' && dislist === 1 ? 'active' : ''}`} 
           data-action="playing" 
           title="正在播放列表" 
-          onClick={() => { setDislist(1); onShowList('list'); }}
+          onClick={handleShowPlaying}
         >
           正在播放
         </span>
         <span 
-          className={`btn ${dislist === 2 ? 'active' : ''}`} 
+          className={`btn ${activeView === 'list' && dislist === 2 ? 'active' : ''}`} 
           data-action="history" 
           title="播放历史" 
           onClick={handleShowPlayHistory}
