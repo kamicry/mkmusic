@@ -1,6 +1,5 @@
 import React, { useEffect, useRef } from 'react';
 import { Music } from '../types';
-import '../styles/music-list.css';
 
 interface MusicListProps {
   list: Music[];
