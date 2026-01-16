@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import Head from 'next/head';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -41,6 +41,10 @@ export default function Home() {
   const [selectedMusicIndex, setSelectedMusicIndex] = useState<number | null>(null);
   const [view, setView] = useState<'list' | 'sheet' | 'player'>('list');
   const [isMobile, setIsMobile] = useState(false);
+
+  const loadedMusicCache = useRef<Set<string>>(new Set());
+  
+  const getMusicCacheKey = (music: Music) => `${music.source}:${music.id}`;
 
   useEffect(() => {
     // Check if mobile device
@@ -185,46 +189,70 @@ export default function Home() {
     if (playlist !== undefined) {
       const music = musicList[playlist]?.item[playid];
       if (music && audioRef.current) {
-        // Fetch album cover if not already loaded
-        if (!music.pic) {
-          ajaxPic(music).then(picUrl => {
-            if (picUrl) {
-              music.pic = picUrl;
-              // Update the music list to trigger re-render
-              setMusicList([...musicList]);
-            }
-          }).catch(error => {
-            console.error('Failed to fetch album cover:', error);
-          });
-        }
-
-        // Fetch music URL
-        if (!music.url) {
-            ajaxUrl(music, bitRate).then(result => {
-                if (result.url && result.url !== 'err') {
-                    music.url = result.url;
-                    if (audioRef.current) {
-                      audioRef.current.src = result.url;
-                      audioRef.current.play();
-                    }
-                    // Add to play history when music starts playing
-                    addToPlayHistory(music);
-                } else {
-                    msg('歌曲链接获取失败');
-                }
+        const cacheKey = getMusicCacheKey(music);
+        
+        // 只有未加载过此歌曲资源才进行加载
+        if (!loadedMusicCache.current.has(cacheKey)) {
+          // Fetch album cover if not already loaded
+          if (!music.pic) {
+            ajaxPic(music).then(picUrl => {
+              if (picUrl) {
+                setMusicList(prev => {
+                  const newList = [...prev];
+                  const m = newList[playlist]?.item[playid];
+                  if (m) m.pic = picUrl;
+                  return newList;
+                });
+              }
             }).catch(error => {
-                const errorMessage = error instanceof Error ? error.message : '歌曲链接获取失败';
-                msg(errorMessage);
+              console.error('Failed to fetch album cover:', error);
             });
+          }
+
+          // Fetch music URL
+          if (!music.url) {
+              ajaxUrl(music, bitRate).then(result => {
+                  if (result.url && result.url !== 'err') {
+                      setMusicList(prev => {
+                        const newList = [...prev];
+                        const m = newList[playlist]?.item[playid];
+                        if (m) m.url = result.url;
+                        return newList;
+                      });
+                      
+                      if (audioRef.current) {
+                        audioRef.current.src = result.url;
+                        audioRef.current.play();
+                      }
+                      // Add to play history when music starts playing
+                      addToPlayHistory(music);
+                  } else {
+                      msg('歌曲链接获取失败');
+                  }
+              }).catch(error => {
+                  const errorMessage = error instanceof Error ? error.message : '歌曲链接获取失败';
+                  msg(errorMessage);
+              });
+          } else {
+              audioRef.current.src = music.url;
+              audioRef.current.play();
+              // Add to play history when music starts playing
+              addToPlayHistory(music);
+          }
+          
+          // 标记此歌曲资源已加载
+          loadedMusicCache.current.add(cacheKey);
         } else {
+          // 歌曲资源已加载过，直接播放
+          if (music.url && audioRef.current) {
             audioRef.current.src = music.url;
             audioRef.current.play();
-            // Add to play history when music starts playing
             addToPlayHistory(music);
+          }
         }
       }
     }
-  }, [playlist, playid, musicList, audioRef, bitRate, setMusicList, addToPlayHistory, msg]);
+  }, [playlist, playid, audioRef, bitRate]);  // ✅ 移除 musicList 和 setMusicList 等依赖项
 
   const currentMusic = playlist !== undefined ? musicList[playlist]?.item[playid] : null;
 
