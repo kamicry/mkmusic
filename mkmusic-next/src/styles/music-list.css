@@ -1,0 +1,162 @@
+/* Music List Component Styles */
+
+.music-list {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.mCustomScrollBox {
+  width: 100%;
+  height: 100%;
+}
+
+/* List item container - use flexbox for better layout */
+.list-item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 50px;
+  line-height: 50px;
+  color: rgba(225, 225, 225, 0.8);
+  font-size: 14px;
+  overflow: hidden;
+  border-bottom: 1px solid rgba(150, 150, 150, 0.1);
+  cursor: pointer;
+  position: relative;
+  padding: 0 10px;
+  box-sizing: border-box;
+  gap: 10px;
+}
+
+.list-item:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Playing state */
+.list-playing {
+  color: #31c27c;
+}
+
+/* List number */
+.list-num {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  flex-shrink: 0;
+  font-size: 14px;
+  color: #999;
+}
+
+.list-playing .list-num {
+  background: url("/images/wave.gif") no-repeat center center;
+  text-indent: -99px;
+}
+
+/* Music name */
+.music-name {
+  flex: 2;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  user-select: none;
+}
+
+/* Artist name */
+.music-artist {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #999;
+  font-size: 13px;
+}
+
+/* Album name */
+.music-album {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #888;
+  font-size: 13px;
+}
+
+/* Info button */
+.music-info-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  font-size: 12px;
+  color: #999;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.1);
+  transition: all 0.2s ease;
+}
+
+.music-info-btn:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+/* Responsive styles */
+@media screen and (max-width: 900px) {
+  .list-item {
+    padding: 0 8px;
+    gap: 8px;
+  }
+  
+  .music-info-btn {
+    display: none;
+  }
+}
+
+@media screen and (max-width: 620px) {
+  .list-item {
+    gap: 6px;
+    padding: 0 6px;
+  }
+  
+  /* Hide album on small screens */
+  .music-album {
+    display: none;
+  }
+  
+  /* Adjust flex ratios */
+  .music-name {
+    flex: 3;
+  }
+  
+  .music-artist {
+    flex: 1;
+    font-size: 12px;
+  }
+}
+
+@media screen and (max-width: 400px) {
+  .list-item {
+    height: 45px;
+    line-height: 45px;
+    font-size: 13px;
+  }
+  
+  .music-name {
+    font-size: 13px;
+  }
+  
+  .music-artist {
+    font-size: 11px;
+  }
+  
+  .list-num {
+    width: 25px;
+    font-size: 12px;
+  }
+}
