@@ -1,5 +1,29 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/pages/api-reference/create-next-app).
 
+# MKOnlineMusicPlayer - Next.js Version
+
+A modern online music player built with Next.js, TypeScript, and React. This player integrates with **GD Studio's Online Music Platform API** to provide access to multiple music sources.
+
+## Features
+
+- 🎵 **Multiple Music Sources**: Support for Netease (网易云), Kuwo (酷我), and JOOX
+- 🎚️ **Bit Rate Selection**: Choose from 128kbps to 999kbps (lossless) quality
+- 📄 **Pagination**: Easy navigation through search results with page jumping
+- 🎼 **Real-time Lyrics**: Synchronized lyrics display with scrolling
+- 📱 **Responsive Design**: Works on desktop and mobile devices
+- ⚡ **Rate Limiting**: Built-in rate limiter to comply with API limits (50 requests per 5 minutes)
+
+## API Integration
+
+This project uses **GD Studio's Online Music Platform API**:
+- **Base URL**: https://music-api.gdstudio.xyz/api.php
+- **Supported Sources**: netease, kuwo, joox
+- **Rate Limit**: 50 requests per 5 minutes
+
+For detailed API documentation, see [API_MIGRATION.md](./API_MIGRATION.md).
+
+**Attribution**: Music API provided by [GD音乐台](https://music.gdstudio.xyz) (Original by metowolf & mengkun, Modified by GD Studio)
+
 ## Prerequisites
 
 This project requires **Node.js 18** to run properly.

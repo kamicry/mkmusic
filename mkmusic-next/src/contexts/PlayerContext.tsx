@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useRef, useEffect } from 'react';
 import { Music, Playlist, OrderMode, Config } from '../types';
+import { API_CONFIG, BitRate } from '../config/api.config';
 
 interface PlayerContextType {
   audioRef: React.RefObject<HTMLAudioElement | null>;
@@ -17,6 +18,9 @@ interface PlayerContextType {
   loadPage: number;
   lyric: { [key: number]: string } | null;
   lastLyric: number;
+  bitRate: BitRate;
+  currentPage: number;
+  totalPages: number;
   
   setPlaylist: (id: number | undefined) => void;
   setPlayid: (id: number) => void;
@@ -31,6 +35,9 @@ interface PlayerContextType {
   setLoadPage: (page: number) => void;
   setLyric: (lyric: { [key: number]: string } | null) => void;
   setLastLyric: (lyric: number) => void;
+  setBitRate: (bitRate: BitRate) => void;
+  setCurrentPage: (page: number) => void;
+  setTotalPages: (pages: number) => void;
 }
 
 const PlayerContext = createContext<PlayerContextType | undefined>(undefined);
@@ -51,6 +58,9 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [musicList, setMusicList] = useState<Playlist[]>([]);
   const [lyric, setLyric] = useState<{ [key: number]: string } | null>(null);
   const [lastLyric, setLastLyric] = useState<number>(0);
+  const [bitRate, setBitRate] = useState<BitRate>(API_CONFIG.defaultBitRate);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [totalPages, setTotalPages] = useState<number>(1);
 
   useEffect(() => {
     const checkMobile = () => {
@@ -82,6 +92,9 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     loadPage,
     lyric,
     lastLyric,
+    bitRate,
+    currentPage,
+    totalPages,
     setPlaylist,
     setPlayid,
     setDislist,
@@ -95,6 +108,9 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setLoadPage,
     setLyric,
     setLastLyric,
+    setBitRate,
+    setCurrentPage,
+    setTotalPages,
   };
 
   return <PlayerContext.Provider value={value}>{children}</PlayerContext.Provider>;

@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { usePlayer } from '../contexts/PlayerContext';
 import { useLayer } from './useLayer';
+import { ajaxSearch } from '../utils/api';
+import { API_CONFIG } from '../config/api.config';
 
 export const useSearch = () => {
   const {
@@ -11,7 +13,10 @@ export const useSearch = () => {
     musicList,
     setMusicList,
     wd,
-    source
+    source,
+    currentPage,
+    setCurrentPage,
+    setTotalPages
   } = usePlayer();
 
   const { msg, close } = useLayer();
@@ -23,27 +28,18 @@ export const useSearch = () => {
       msg('搜索内容不能为空', { anim: 6 });
       return;
     }
-
-    let loadingIndex: any;
-    if (page === 1) {
-      loadingIndex = msg('搜索中', { icon: 16, shade: 0.01, time: 0 });
-    }
     
     setIsSearching(true);
 
     try {
-      // 使用固定的 API 配置
-      const apiUrl = '/api/search';
-      const response = await fetch(
-        `${apiUrl}?name=${encodeURIComponent(searchTerm)}&source=${searchSource}&page=${page}`,
-        { signal: AbortSignal.timeout(10000) }
-      );
-      const data = await response.json();
+      // Use new GD Studio API
+      const data = await ajaxSearch(searchTerm, searchSource as any, page, API_CONFIG.pageSize);
 
       if (page === 1) {
         // First page - clear existing results
         if (data.length === 0) {
           msg('没有找到相关歌曲', { anim: 6 });
+          setTotalPages(1);
           return;
         }
 
@@ -67,22 +63,28 @@ export const useSearch = () => {
       }
 
       // Process search results
-      const newItems = data.map((item: any, index: number) => ({
+      const newItems = data.map((item: any) => ({
         id: item.id,
         name: item.name,
-        artist: item.artist[0],
+        artist: Array.isArray(item.artist) ? item.artist[0] : item.artist,
         album: item.album,
         source: item.source,
-        url_id: item.url_id,
-        pic_id: item.pic_id,
-        lyric_id: item.lyric_id,
+        url_id: item.url_id || item.id,
+        pic_id: item.pic_id || item.id,
+        lyric_id: item.lyric_id || item.id,
         pic: null,
         url: null
       }));
 
       // Update music list
       const updatedMusicList = [...musicList];
-      updatedMusicList[0].item = [...updatedMusicList[0].item, ...newItems];
+      if (page === 1) {
+        // Replace items for first page
+        updatedMusicList[0].item = newItems;
+      } else {
+        // Append items for subsequent pages
+        updatedMusicList[0].item = [...updatedMusicList[0].item, ...newItems];
+      }
       setMusicList(updatedMusicList);
 
       // Update state
@@ -90,6 +92,15 @@ export const useSearch = () => {
       setSource(searchSource);
       setLoadPage(page + 1);
       setDislist(0);
+      setCurrentPage(page);
+
+      // Calculate total pages based on results
+      // If we got full page of results, assume there might be more
+      if (newItems.length >= API_CONFIG.pageSize) {
+        setTotalPages(page + 1); // At least one more page
+      } else {
+        setTotalPages(page); // This is the last page
+      }
 
       // Scroll to top if first page
       if (page === 1) {
@@ -97,8 +108,7 @@ export const useSearch = () => {
       }
 
       // Add load more indicator if more results might be available
-      const loadcount = 20; // 默认每页加载数量
-      if (newItems.length >= loadcount) {
+      if (newItems.length >= API_CONFIG.pageSize) {
         addListBar('more');
       } else {
         addListBar('nomore');
@@ -106,12 +116,10 @@ export const useSearch = () => {
 
     } catch (error) {
       console.error('Search failed:', error);
-      msg('搜索结果获取失败', { anim: 6 });
+      const errorMessage = error instanceof Error ? error.message : '搜索结果获取失败';
+      msg(errorMessage, { anim: 6 });
     } finally {
       setIsSearching(false);
-      if (loadingIndex !== undefined) {
-        close(loadingIndex);
-      }
     }
   };
 
@@ -136,42 +144,8 @@ export const useSearch = () => {
 
   // Show search box
   const showSearchBox = () => {
-    const tmpHtml = `
-      <form onSubmit="return searchSubmit()">
-        <div id="search-area">
-          <div class="search-group">
-            <input type="text" name="wd" id="search-wd" placeholder="搜索歌手、歌名、专辑" autofocus required>
-            <button class="search-submit" type="submit">搜 索</button>
-          </div>
-          <div class="radio-group" id="music-source">
-            <label><input type="radio" name="source" value="netease" ${source === 'netease' ? 'checked' : ''}> 网易云</label>
-            <label><input type="radio" name="source" value="tencent" ${source === 'tencent' ? 'checked' : ''}> QQ</label>
-            <label><input type="radio" name="source" value="xiami" ${source === 'xiami' ? 'checked' : ''}> 虾米</label>
-            <label><input type="radio" name="source" value="kugou" ${source === 'kugou' ? 'checked' : ''}> 酷狗</label>
-            <label><input type="radio" name="source" value="baidu" ${source === 'baidu' ? 'checked' : ''}> 百度</label>
-          </div>
-        </div>
-      </form>
-    `;
-
-    // This would typically use a modal library
-    // For now, we'll just log it
-    console.log('Show search box:', tmpHtml);
-
-    // Restore previous search
-    const searchInput = document.getElementById('search-wd') as HTMLInputElement;
-    if (searchInput) {
-      searchInput.focus();
-      searchInput.value = wd;
-    }
-
-    // Restore source selection
-    const sourceRadios = document.querySelectorAll(`#music-source input[name='source']`) as NodeListOf<HTMLInputElement>;
-    sourceRadios.forEach(radio => {
-      if (radio.value === source) {
-        radio.checked = true;
-      }
-    });
+    // This is now handled by the SearchPanel component
+    console.log('Show search box');
   };
 
   // Handle search submit
@@ -193,11 +167,19 @@ export const useSearch = () => {
 
     // Reset load page
     setLoadPage(1);
+    setCurrentPage(1);
 
     // Perform search
     performSearch(searchTerm, selectedSource, 1);
 
     return false;
+  };
+
+  // Load more results (next page)
+  const loadMore = () => {
+    if (!isSearching && wd) {
+      performSearch(wd, source, currentPage + 1);
+    }
   };
 
   return {
@@ -206,6 +188,7 @@ export const useSearch = () => {
     showSearchBox,
     searchSubmit,
     addListhead,
-    addListBar
+    addListBar,
+    loadMore
   };
 };

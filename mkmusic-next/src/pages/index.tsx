@@ -7,9 +7,10 @@ import MusicList from '../components/MusicList';
 import DataArea from '../components/DataArea';
 import MainPlayer from '../components/MainPlayer';
 import SearchPanel from '../components/SearchPanel';
+import MusicInfoPanel from '../components/MusicInfoPanel';
 import { usePlayerContext } from '../contexts/PlayerContext';
 import { defaultMusicList } from '../utils/musicList';
-import { ajaxSearch, ajaxUrl, ajaxPlaylist } from '../utils/api';
+import { ajaxSearch, ajaxUrl, ajaxPlaylist, ajaxPic } from '../utils/api';
 import { useLayer } from '../hooks/useLayer';
 import { Music, Playlist } from '../types';
 
@@ -27,10 +28,13 @@ export default function Home() {
     setWd,
     setSource,
     setLoadPage,
+    bitRate,
   } = usePlayerContext();
 
   const { msg } = useLayer();
   const [showSearch, setShowSearch] = useState(false);
+  const [showMusicInfo, setShowMusicInfo] = useState(false);
+  const [selectedMusicIndex, setSelectedMusicIndex] = useState<number | null>(null);
   const [view, setView] = useState<'list' | 'sheet' | 'player'>('list');
   const [isMobile, setIsMobile] = useState(false);
 
@@ -81,22 +85,21 @@ export default function Home() {
     }
   };
 
-  const handleSearch = async (wd: string, source: string) => {
+  const handleSearch = async (wd: string, source: string, page: number = 1) => {
     setWd(wd);
     setSource(source);
-    setLoadPage(1);
-    const loading = msg('搜索中', { icon: 16, shade: 0.01, time: 0 });
+    setLoadPage(page);
     try {
-      const results = await ajaxSearch(wd, source, 1, 20);
+      const results = await ajaxSearch(wd, source as any, page, 20);
       const items: Music[] = results.map((item: any) => ({
         id: item.id,
         name: item.name,
-        artist: item.artist[0],
+        artist: Array.isArray(item.artist) ? item.artist[0] : item.artist,
         album: item.album,
         source: item.source,
-        url_id: item.url_id,
-        pic_id: item.pic_id,
-        lyric_id: item.lyric_id,
+        url_id: item.url_id || item.id,
+        pic_id: item.pic_id || item.id,
+        lyric_id: item.lyric_id || item.id,
         pic: null,
         url: null
       }));
@@ -108,7 +111,8 @@ export default function Home() {
       setDislist(0);
       setView('list');
     } catch (error) {
-      msg('搜索失败');
+      const errorMessage = error instanceof Error ? error.message : '搜索失败';
+      msg(errorMessage);
     }
   };
 
@@ -143,21 +147,43 @@ export default function Home() {
     }
   };
 
+  const handleInfoClick = (index: number) => {
+    setSelectedMusicIndex(index);
+    setShowMusicInfo(true);
+  };
+
   useEffect(() => {
     if (playlist !== undefined) {
       const music = musicList[playlist]?.item[playid];
       if (music && audioRef.current) {
+        // Fetch album cover if not already loaded
+        if (!music.pic) {
+          ajaxPic(music).then(picUrl => {
+            if (picUrl) {
+              music.pic = picUrl;
+              // Update the music list to trigger re-render
+              setMusicList([...musicList]);
+            }
+          }).catch(error => {
+            console.error('Failed to fetch album cover:', error);
+          });
+        }
+
+        // Fetch music URL
         if (!music.url) {
-            ajaxUrl(music).then(url => {
-                if (url && url !== 'err') {
-                    music.url = url;
+            ajaxUrl(music, bitRate).then(result => {
+                if (result.url && result.url !== 'err') {
+                    music.url = result.url;
                     if (audioRef.current) {
-                      audioRef.current.src = url;
+                      audioRef.current.src = result.url;
                       audioRef.current.play();
                     }
                 } else {
                     msg('歌曲链接获取失败');
                 }
+            }).catch(error => {
+                const errorMessage = error instanceof Error ? error.message : '歌曲链接获取失败';
+                msg(errorMessage);
             });
         } else {
             audioRef.current.src = music.url;
@@ -165,7 +191,7 @@ export default function Home() {
         }
       }
     }
-  }, [playlist, playid, musicList, audioRef]);
+  }, [playlist, playid, musicList, audioRef, bitRate, setMusicList]);
 
   const currentMusic = playlist !== undefined ? musicList[playlist]?.item[playid] : null;
 
@@ -226,6 +252,7 @@ export default function Home() {
                   list={musicList[dislist]?.item || []} 
                   currentPlayId={playlist === dislist ? playid : undefined}
                   onItemClick={handleItemClick}
+                  onInfoClick={handleInfoClick}
                 />
               )}
             </DataArea>
@@ -264,6 +291,19 @@ export default function Home() {
             <a className="layui-layer-ico layui-layer-close layui-layer-close1" href="javascript:;" onClick={() => setShowSearch(false)}></a>
           </span>
         </div>
+      )}
+
+      {showMusicInfo && selectedMusicIndex !== null && (
+        <>
+          <div 
+            className="music-info-backdrop" 
+            onClick={() => setShowMusicInfo(false)}
+          />
+          <MusicInfoPanel 
+            music={musicList[dislist]?.item[selectedMusicIndex]} 
+            onClose={() => setShowMusicInfo(false)} 
+          />
+        </>
       )}
     </>
   );
