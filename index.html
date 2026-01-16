@@ -85,7 +85,15 @@
             </div>
             <!--滚动歌词-->
             <div class="lyric">
-                <ul id="lyric"></ul>
+                <!-- 翻译切换按钮 -->
+                <div class="lyric-toggle" id="lyric-toggle" style="display: none;">
+                    <button class="toggle-btn active" data-toggle="original">原歌词</button>
+                    <button class="toggle-btn" data-toggle="translation">翻译歌词</button>
+                </div>
+                <!-- 歌词滚动容器 -->
+                <div class="lyric-scroll-container">
+                    <ul id="lyric"></ul>
+                </div>
             </div>
             <div class="music-info-display"></div>
             <div id="music-info" title="点击查看歌曲信息"></div>
@@ -130,6 +138,9 @@
 
 <!-- 播放器歌词解析模块 -->
 <script src="js/lyric.js"></script>
+
+<!-- 翻译切换模块 -->
+<script src="js/translation.js"></script>
 
 <!-- 音乐列表配置 -->
 <script src="js/musicList.js"></script>
