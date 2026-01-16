@@ -7,9 +7,10 @@ import MusicList from '../components/MusicList';
 import DataArea from '../components/DataArea';
 import MainPlayer from '../components/MainPlayer';
 import SearchPanel from '../components/SearchPanel';
+import MusicInfoPanel from '../components/MusicInfoPanel';
 import { usePlayerContext } from '../contexts/PlayerContext';
 import { defaultMusicList } from '../utils/musicList';
-import { ajaxSearch, ajaxUrl, ajaxPlaylist } from '../utils/api';
+import { ajaxSearch, ajaxUrl, ajaxPlaylist, ajaxPic } from '../utils/api';
 import { useLayer } from '../hooks/useLayer';
 import { Music, Playlist } from '../types';
 
@@ -32,6 +33,8 @@ export default function Home() {
 
   const { msg } = useLayer();
   const [showSearch, setShowSearch] = useState(false);
+  const [showMusicInfo, setShowMusicInfo] = useState(false);
+  const [selectedMusicIndex, setSelectedMusicIndex] = useState<number | null>(null);
   const [view, setView] = useState<'list' | 'sheet' | 'player'>('list');
   const [isMobile, setIsMobile] = useState(false);
 
@@ -86,7 +89,6 @@ export default function Home() {
     setWd(wd);
     setSource(source);
     setLoadPage(page);
-    const loading = msg('搜索中', { icon: 16, shade: 0.01, time: 0 });
     try {
       const results = await ajaxSearch(wd, source as any, page, 20);
       const items: Music[] = results.map((item: any) => ({
@@ -145,10 +147,29 @@ export default function Home() {
     }
   };
 
+  const handleInfoClick = (index: number) => {
+    setSelectedMusicIndex(index);
+    setShowMusicInfo(true);
+  };
+
   useEffect(() => {
     if (playlist !== undefined) {
       const music = musicList[playlist]?.item[playid];
       if (music && audioRef.current) {
+        // Fetch album cover if not already loaded
+        if (!music.pic) {
+          ajaxPic(music).then(picUrl => {
+            if (picUrl) {
+              music.pic = picUrl;
+              // Update the music list to trigger re-render
+              setMusicList([...musicList]);
+            }
+          }).catch(error => {
+            console.error('Failed to fetch album cover:', error);
+          });
+        }
+
+        // Fetch music URL
         if (!music.url) {
             ajaxUrl(music, bitRate).then(result => {
                 if (result.url && result.url !== 'err') {
@@ -170,7 +191,7 @@ export default function Home() {
         }
       }
     }
-  }, [playlist, playid, musicList, audioRef, bitRate]);
+  }, [playlist, playid, musicList, audioRef, bitRate, setMusicList]);
 
   const currentMusic = playlist !== undefined ? musicList[playlist]?.item[playid] : null;
 
@@ -231,6 +252,7 @@ export default function Home() {
                   list={musicList[dislist]?.item || []} 
                   currentPlayId={playlist === dislist ? playid : undefined}
                   onItemClick={handleItemClick}
+                  onInfoClick={handleInfoClick}
                 />
               )}
             </DataArea>
@@ -269,6 +291,19 @@ export default function Home() {
             <a className="layui-layer-ico layui-layer-close layui-layer-close1" href="javascript:;" onClick={() => setShowSearch(false)}></a>
           </span>
         </div>
+      )}
+
+      {showMusicInfo && selectedMusicIndex !== null && (
+        <>
+          <div 
+            className="music-info-backdrop" 
+            onClick={() => setShowMusicInfo(false)}
+          />
+          <MusicInfoPanel 
+            music={musicList[dislist]?.item[selectedMusicIndex]} 
+            onClose={() => setShowMusicInfo(false)} 
+          />
+        </>
       )}
     </>
   );

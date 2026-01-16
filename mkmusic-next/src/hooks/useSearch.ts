@@ -28,11 +28,6 @@ export const useSearch = () => {
       msg('搜索内容不能为空', { anim: 6 });
       return;
     }
-
-    let loadingIndex: any;
-    if (page === 1) {
-      loadingIndex = msg('搜索中', { icon: 16, shade: 0.01, time: 0 });
-    }
     
     setIsSearching(true);
 
@@ -125,9 +120,6 @@ export const useSearch = () => {
       msg(errorMessage, { anim: 6 });
     } finally {
       setIsSearching(false);
-      if (loadingIndex !== undefined) {
-        close(loadingIndex);
-      }
     }
   };
 

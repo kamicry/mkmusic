@@ -5,6 +5,7 @@ interface MusicListProps {
   list: Music[];
   currentPlayId?: number;
   onItemClick: (index: number) => void;
+  onInfoClick?: (index: number) => void;
   isSheet?: boolean;
 }
 
@@ -14,7 +15,7 @@ declare global {
   }
 }
 
-const MusicList: React.FC<MusicListProps> = ({ list, currentPlayId, onItemClick, isSheet }) => {
+const MusicList: React.FC<MusicListProps> = ({ list, currentPlayId, onItemClick, onInfoClick, isSheet }) => {
   const listRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -29,6 +30,13 @@ const MusicList: React.FC<MusicListProps> = ({ list, currentPlayId, onItemClick,
     }
   }, []);
 
+  const handleInfoClick = (e: React.MouseEvent, index: number) => {
+    e.stopPropagation(); // Prevent triggering play
+    if (onInfoClick) {
+      onInfoClick(index);
+    }
+  };
+
   return (
     <div className="music-list data-box" ref={listRef}>
       <div className="mCustomScrollBox">
@@ -36,13 +44,21 @@ const MusicList: React.FC<MusicListProps> = ({ list, currentPlayId, onItemClick,
           <div
             key={`${item.id}-${index}`}
             className={`list-item ${currentPlayId === index ? 'list-playing' : ''}`}
-            onClick={() => onItemClick(index)}
             data-no={index}
           >
-            <span className="list-num">{index + 1}</span>
-            <span className="music-name">{item.name}</span>
-            <span className="music-artist">{item.artist}</span>
-            <span className="music-album">{item.album}</span>
+            <span className="list-num" onClick={() => onItemClick(index)}>{index + 1}</span>
+            <span className="music-name" onClick={() => onItemClick(index)}>{item.name}</span>
+            <span className="music-artist" onClick={() => onItemClick(index)}>{item.artist}</span>
+            <span className="music-album" onClick={() => onItemClick(index)}>{item.album}</span>
+            {onInfoClick && (
+              <span 
+                className="music-info-btn" 
+                onClick={(e) => handleInfoClick(e, index)}
+                title="查看详情"
+              >
+                ℹ️
+              </span>
+            )}
           </div>
         ))}
       </div>

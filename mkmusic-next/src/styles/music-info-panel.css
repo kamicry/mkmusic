@@ -1,0 +1,244 @@
+/**
+ * Music Info Panel Styles
+ * 歌曲详情面板样式
+ */
+
+.music-info-modal {
+  border-radius: 8px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+.music-info-modal .layui-layer-title {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 15px 20px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 8px 8px 0 0;
+}
+
+.music-info-content {
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.loading-state {
+  text-align: center;
+  padding: 40px;
+  color: #999;
+  font-size: 16px;
+}
+
+.info-section {
+  margin-bottom: 25px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #eee;
+}
+
+.info-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.info-section h3 {
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.info-row {
+  display: flex;
+  margin-bottom: 12px;
+  align-items: flex-start;
+}
+
+.info-label {
+  min-width: 100px;
+  color: #666;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.info-value {
+  color: #333;
+  flex: 1;
+  word-break: break-all;
+}
+
+.info-value-link {
+  flex: 1;
+  display: flex;
+  gap: 8px;
+}
+
+.link-input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 13px;
+  background-color: #f9f9f9;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.link-input:hover {
+  background-color: #f0f0f0;
+  border-color: #999;
+}
+
+.link-input:focus {
+  outline: none;
+  border-color: #31c27c;
+  background-color: #fff;
+}
+
+.copy-btn {
+  padding: 8px 16px;
+  background-color: #31c27c;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+
+.copy-btn:hover:not(:disabled) {
+  background-color: #28a868;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(49, 194, 124, 0.3);
+}
+
+.copy-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.copy-btn:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.cover-preview {
+  text-align: center;
+  padding: 15px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+}
+
+.cover-preview img {
+  max-width: 100%;
+  max-height: 300px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.info-notes {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.info-notes li {
+  padding: 8px 0;
+  color: #666;
+  font-size: 13px;
+  position: relative;
+  padding-left: 20px;
+}
+
+.info-notes li:before {
+  content: '•';
+  position: absolute;
+  left: 5px;
+  color: #31c27c;
+  font-weight: bold;
+}
+
+/* Responsive design */
+@media (max-width: 600px) {
+  .music-info-modal {
+    width: 95% !important;
+    max-width: none !important;
+  }
+
+  .info-row {
+    flex-direction: column;
+  }
+
+  .info-label {
+    min-width: auto;
+    margin-bottom: 5px;
+  }
+
+  .info-value-link {
+    width: 100%;
+  }
+
+  .link-input {
+    font-size: 12px;
+  }
+
+  .copy-btn {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+
+  .cover-preview img {
+    max-height: 200px;
+  }
+}
+
+/* Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -48%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
+
+.music-info-modal {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Dark overlay backdrop */
+.music-info-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 19891015;
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Custom scrollbar for modal content */
+.music-info-modal .layui-layer-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.music-info-modal .layui-layer-content::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.music-info-modal .layui-layer-content::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.music-info-modal .layui-layer-content::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}

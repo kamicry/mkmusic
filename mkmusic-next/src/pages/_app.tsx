@@ -4,6 +4,7 @@ import "@/styles/small.css";
 import "@/styles/jquery.mCustomScrollbar.min.css";
 import "@/styles/layer/layer.css";
 import "@/styles/search-panel.css";
+import "@/styles/music-info-panel.css";
 import type { AppProps } from "next/app";
 import { PlayerProvider } from "../contexts/PlayerContext";
 

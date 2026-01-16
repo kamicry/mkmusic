@@ -549,14 +549,48 @@ body {
     text-overflow: ellipsis;
 }
 /* 正在播放的那一句歌词 */
-#lyric .lplaying {
+#lyric .lplaying,
+#lyric .lyric-next {
     color: #31c27c;
+    font-size: 18px;
+    font-weight: 500;
+    text-shadow: 0 0 10px rgba(49, 194, 124, 0.5);
+    transform: scale(1.05);
+    transition: all 0.3s ease;
 }
 /* 歌词显示区显示的提示语(如加载中、无歌词等) */
 .lyric-tip {
     position: absolute;
     width: 100%;
     top: 50%;
+}
+
+/* 列表中的歌曲信息按钮 */
+.music-info-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    margin-left: auto;
+    cursor: pointer;
+    opacity: 0.6;
+    transition: all 0.2s;
+    font-size: 16px;
+    border-radius: 50%;
+    background-color: rgba(49, 194, 124, 0.1);
+}
+
+.music-info-btn:hover {
+    opacity: 1;
+    background-color: rgba(49, 194, 124, 0.2);
+    transform: scale(1.1);
+}
+
+.list-item {
+    display: flex !important;
+    align-items: center;
+    gap: 10px;
 }
 
 /* 歌曲信息按钮 */
