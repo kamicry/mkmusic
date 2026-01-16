@@ -56,8 +56,9 @@
 
 /* Music name */
 .music-name {
-  flex: 2;
-  min-width: 0;
+  flex: 3;
+  max-width: 40%;
+  min-width: 100px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -66,8 +67,9 @@
 
 /* Artist name */
 .music-artist {
-  flex: 1;
-  min-width: 0;
+  flex: 2;
+  max-width: 30%;
+  min-width: 80px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -77,8 +79,9 @@
 
 /* Album name */
 .music-album {
-  flex: 1;
-  min-width: 0;
+  flex: 2;
+  max-width: 30%;
+  min-width: 80px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -123,19 +126,23 @@
     gap: 6px;
     padding: 0 6px;
   }
-  
+
   /* Hide album on small screens */
   .music-album {
     display: none;
   }
-  
-  /* Adjust flex ratios */
+
+  /* Adjust flex ratios and widths */
   .music-name {
     flex: 3;
+    max-width: 60%;
+    min-width: 80px;
   }
-  
+
   .music-artist {
-    flex: 1;
+    flex: 2;
+    max-width: 40%;
+    min-width: 60px;
     font-size: 12px;
   }
 }
