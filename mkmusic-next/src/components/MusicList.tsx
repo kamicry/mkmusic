@@ -1,5 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Music } from '../types';
+import { usePlayerContext } from '../contexts/PlayerContext';
+import { removePlayHistoryItem } from '../utils/storage';
 
 interface MusicListProps {
   list: Music[];
@@ -7,6 +9,7 @@ interface MusicListProps {
   onItemClick: (index: number) => void;
   onInfoClick?: (index: number) => void;
   isSheet?: boolean;
+  dislist?: number; // Add dislist prop to identify play history
 }
 
 declare global {
@@ -15,8 +18,9 @@ declare global {
   }
 }
 
-const MusicList: React.FC<MusicListProps> = ({ list, currentPlayId, onItemClick, onInfoClick, isSheet }) => {
+const MusicList: React.FC<MusicListProps> = ({ list, currentPlayId, onItemClick, onInfoClick, isSheet, dislist }) => {
   const listRef = useRef<HTMLDivElement>(null);
+  const { setPlayHistory, playHistory } = usePlayerContext();
 
   useEffect(() => {
     if (typeof window !== 'undefined' && (window as any).$ && listRef.current) {
@@ -34,6 +38,20 @@ const MusicList: React.FC<MusicListProps> = ({ list, currentPlayId, onItemClick,
     e.stopPropagation(); // Prevent triggering play
     if (onInfoClick) {
       onInfoClick(index);
+    }
+  };
+
+  const handleDeleteHistoryItem = (e: React.MouseEvent, index: number) => {
+    e.stopPropagation(); // Prevent triggering play
+    const music = list[index];
+    if (music && window.confirm(`确定要从播放历史中删除"${music.name}"吗？`)) {
+      // Remove from play history
+      removePlayHistoryItem(music.id, music.source);
+      // Update play history state
+      const updatedHistory = playHistory.filter(item => 
+        !(item.id === music.id && item.source === music.source)
+      );
+      setPlayHistory(updatedHistory);
     }
   };
 
@@ -57,6 +75,22 @@ const MusicList: React.FC<MusicListProps> = ({ list, currentPlayId, onItemClick,
                 title="查看详情"
               >
                 ℹ️
+              </span>
+            )}
+            {dislist === 2 && (
+              <span
+                className="music-delete-btn"
+                onClick={(e) => handleDeleteHistoryItem(e, index)}
+                title="从播放历史中删除"
+                style={{ 
+                  cursor: 'pointer', 
+                  color: '#ff4757', 
+                  marginLeft: '8px',
+                  fontSize: '14px',
+                  fontWeight: 'bold'
+                }}
+              >
+                ×
               </span>
             )}
           </div>

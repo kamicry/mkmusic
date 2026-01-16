@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useRef, useEffect } from 'react';
 import { Music, Playlist, OrderMode, Config, LyricLine } from '../types';
 import { API_CONFIG, BitRate } from '../config/api.config';
+import { getPlayHistory, savePlayHistory, clearPlayHistory, removePlayHistoryItem } from '../utils/storage';
 
 interface PlayerContextType {
   audioRef: React.RefObject<HTMLAudioElement | null>;
@@ -25,6 +26,7 @@ interface PlayerContextType {
   originalLyrics: LyricLine[];
   translatedLyrics: LyricLine[];
   hasTranslation: boolean;
+  playHistory: Music[];
   
   setPlaylist: (id: number | undefined) => void;
   setPlayid: (id: number) => void;
@@ -46,6 +48,9 @@ interface PlayerContextType {
   setOriginalLyrics: (lyrics: LyricLine[]) => void;
   setTranslatedLyrics: (lyrics: LyricLine[]) => void;
   setHasTranslation: (has: boolean) => void;
+  setPlayHistory: (history: Music[]) => void;
+  addToPlayHistory: (music: Music) => void;
+  clearPlayHistoryCtx: () => void;
 }
 
 const PlayerContext = createContext<PlayerContextType | undefined>(undefined);
@@ -73,6 +78,44 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [originalLyrics, setOriginalLyrics] = useState<LyricLine[]>([]);
   const [translatedLyrics, setTranslatedLyrics] = useState<LyricLine[]>([]);
   const [hasTranslation, setHasTranslation] = useState<boolean>(false);
+  const [playHistory, setPlayHistory] = useState<Music[]>([]);
+
+  // Load play history on component mount
+  useEffect(() => {
+    const loadPlayHistoryFromStorage = () => {
+      try {
+        const history = getPlayHistory();
+        setPlayHistory(history);
+      } catch (error) {
+        console.error('Failed to load play history:', error);
+        setPlayHistory([]);
+      }
+    };
+
+    if (typeof window !== 'undefined') {
+      loadPlayHistoryFromStorage();
+    }
+  }, []);
+
+  // Play history management functions
+  const addToPlayHistory = (music: Music) => {
+    try {
+      savePlayHistory(music);
+      const updatedHistory = getPlayHistory();
+      setPlayHistory(updatedHistory);
+    } catch (error) {
+      console.error('Failed to add to play history:', error);
+    }
+  };
+
+  const clearPlayHistoryCtx = () => {
+    try {
+      clearPlayHistory();
+      setPlayHistory([]);
+    } catch (error) {
+      console.error('Failed to clear play history:', error);
+    }
+  };
 
   useEffect(() => {
     const checkMobile = () => {
@@ -111,6 +154,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     originalLyrics,
     translatedLyrics,
     hasTranslation,
+    playHistory,
     setPlaylist,
     setPlayid,
     setDislist,
@@ -131,6 +175,9 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setOriginalLyrics,
     setTranslatedLyrics,
     setHasTranslation,
+    setPlayHistory,
+    addToPlayHistory,
+    clearPlayHistoryCtx,
   };
 
   return <PlayerContext.Provider value={value}>{children}</PlayerContext.Provider>;

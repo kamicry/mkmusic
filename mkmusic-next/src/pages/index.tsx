@@ -12,7 +12,7 @@ import { usePlayerContext } from '../contexts/PlayerContext';
 import { defaultMusicList } from '../utils/musicList';
 import { ajaxSearch, ajaxUrl, ajaxPlaylist, ajaxPic } from '../utils/api';
 import { useLayer } from '../hooks/useLayer';
-import { Music, Playlist } from '../types';
+import { Music } from '../types';
 
 export default function Home() {
   const {
@@ -29,6 +29,8 @@ export default function Home() {
     setSource,
     setLoadPage,
     bitRate,
+    playHistory,
+    addToPlayHistory,
   } = usePlayerContext();
 
   const { msg } = useLayer();
@@ -37,21 +39,6 @@ export default function Home() {
   const [selectedMusicIndex, setSelectedMusicIndex] = useState<number | null>(null);
   const [view, setView] = useState<'list' | 'sheet' | 'player'>('list');
   const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    // Check if mobile device
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 900);
-    };
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    
-    setMusicList(defaultMusicList);
-    // Load default playlist
-    loadPlaylist("3778678", 3); // 云音乐热歌榜
-    
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
 
   const loadPlaylist = async (lid: string, index: number) => {
     try {
@@ -84,6 +71,46 @@ export default function Home() {
       console.error('Failed to load playlist', error);
     }
   };
+
+  useEffect(() => {
+    // Check if mobile device
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 900);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    setMusicList(defaultMusicList);
+    
+    // Load default playlist
+    loadPlaylist("3778678", 3); // 云音乐热歌榜
+    
+    return () => window.removeEventListener('resize', checkMobile);
+  }, [loadPlaylist, setMusicList]);
+
+  // Initialize and update play history in musicList when playHistory changes
+  useEffect(() => {
+    setMusicList(prev => {
+      const newList = [...prev];
+      // Add or update play history playlist at index 2
+      newList[2] = {
+        id: 'play_history',
+        name: '播放历史',
+        cover: 'images/player_cover.png',
+        item: playHistory,
+        creatorName: ''
+      };
+      return newList;
+    });
+  }, [playHistory, setMusicList]);
+
+  // Set initial view to show play history after component mounts
+  useEffect(() => {
+    if (musicList.length > 0) {
+      setDislist(2); // Show play history by default
+      setView('list');
+    }
+  }, [musicList.length, setDislist]);
 
   const handleSearch = async (wd: string, source: string, page: number = 1) => {
     setWd(wd);
@@ -178,6 +205,8 @@ export default function Home() {
                       audioRef.current.src = result.url;
                       audioRef.current.play();
                     }
+                    // Add to play history when music starts playing
+                    addToPlayHistory(music);
                 } else {
                     msg('歌曲链接获取失败');
                 }
@@ -188,10 +217,12 @@ export default function Home() {
         } else {
             audioRef.current.src = music.url;
             audioRef.current.play();
+            // Add to play history when music starts playing
+            addToPlayHistory(music);
         }
       }
     }
-  }, [playlist, playid, musicList, audioRef, bitRate, setMusicList]);
+  }, [playlist, playid, musicList, audioRef, bitRate, setMusicList, addToPlayHistory, msg]);
 
   const currentMusic = playlist !== undefined ? musicList[playlist]?.item[playid] : null;
 
@@ -253,6 +284,7 @@ export default function Home() {
                   currentPlayId={playlist === dislist ? playid : undefined}
                   onItemClick={handleItemClick}
                   onInfoClick={handleInfoClick}
+                  dislist={dislist}
                 />
               )}
             </DataArea>

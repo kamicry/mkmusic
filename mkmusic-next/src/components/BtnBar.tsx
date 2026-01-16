@@ -8,6 +8,19 @@ interface BtnBarProps {
 }
 
 const BtnBar: React.FC<BtnBarProps> = ({ onSearchClick, onShowList, activeView }) => {
+  const { dislist, setDislist, playHistory, clearPlayHistoryCtx } = usePlayerContext();
+
+  const handleShowPlayHistory = () => {
+    setDislist(2); // Play history is at index 2
+    onShowList('list');
+  };
+
+  const handleClearHistory = () => {
+    if (window.confirm('确定要清空所有播放历史吗？')) {
+      clearPlayHistoryCtx();
+    }
+  };
+
   return (
     <div className="btn-bar">
       <div className="btn-box" id="btn-area">
@@ -19,12 +32,20 @@ const BtnBar: React.FC<BtnBarProps> = ({ onSearchClick, onShowList, activeView }
           播放器
         </span>
         <span 
-          className={`btn ${activeView === 'list' ? 'active' : ''}`} 
+          className={`btn ${activeView === 'list' && dislist === 1 ? 'active' : ''}`} 
           data-action="playing" 
           title="正在播放列表" 
-          onClick={() => onShowList('list')}
+          onClick={() => { setDislist(1); onShowList('list'); }}
         >
           正在播放
+        </span>
+        <span 
+          className={`btn ${dislist === 2 ? 'active' : ''}`} 
+          data-action="history" 
+          title="播放历史" 
+          onClick={handleShowPlayHistory}
+        >
+          播放历史 ({playHistory.length})
         </span>
         <span 
           className={`btn ${activeView === 'sheet' ? 'active' : ''}`} 
@@ -42,6 +63,17 @@ const BtnBar: React.FC<BtnBarProps> = ({ onSearchClick, onShowList, activeView }
         >
           歌曲搜索
         </span>
+        {dislist === 2 && playHistory.length > 0 && (
+          <span 
+            className="btn btn-clear-history" 
+            data-action="clear-history" 
+            title="清空播放历史" 
+            onClick={handleClearHistory}
+            style={{ marginLeft: '10px', color: '#ff4757' }}
+          >
+            清空历史
+          </span>
+        )}
       </div>
     </div>
   );
