@@ -31,6 +31,8 @@ export default function Home() {
     bitRate,
     playHistory,
     addToPlayHistory,
+    setPlayHistory,
+    clearPlayHistoryCtx,
   } = usePlayerContext();
 
   const { msg } = useLayer();
@@ -268,14 +270,39 @@ export default function Home() {
             <DataArea>
               {view === 'sheet' && (
                 <div id="sheet" className="data-box">
-                  {musicList.slice(3).map((sheet, index) => (
-                    <div key={index} className="sheet-item" onClick={() => { setDislist(index + 3); setView('list'); }}>
+                  <div className="sheet-section">
+                    <h3>播放历史</h3>
+                    <div className="sheet-item" onClick={() => { setDislist(2); setView('list'); }}>
                       <div className="sheet-cover-box">
-                        <img src={sheet.cover || 'images/player_cover.png'} className="sheet-cover" alt="sheet cover" />
+                        <img src={playHistory.length > 0 && playHistory[0].pic ? playHistory[0].pic : 'images/player_cover.png'} className="sheet-cover" alt="播放历史" />
                       </div>
-                      <span className="sheet-name">{sheet.name}</span>
+                      <span className="sheet-name">播放历史 ({playHistory.length})</span>
+                      {playHistory.length > 0 && (
+                        <button 
+                          className="clear-history-btn" 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (window.confirm('确定要清空所有播放历史吗？')) {
+                              clearPlayHistoryCtx();
+                            }
+                          }}
+                        >
+                          清空
+                        </button>
+                      )}
                     </div>
-                  ))}
+                  </div>
+                  <div className="sheet-section">
+                    <h3>推荐歌单</h3>
+                    {musicList.slice(3).map((sheet, index) => (
+                      <div key={index} className="sheet-item" onClick={() => { setDislist(index + 3); setView('list'); }}>
+                        <div className="sheet-cover-box">
+                          <img src={sheet.cover || 'images/player_cover.png'} className="sheet-cover" alt="sheet cover" />
+                        </div>
+                        <span className="sheet-name">{sheet.name}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
               
