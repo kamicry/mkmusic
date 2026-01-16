@@ -21,6 +21,7 @@ const LyricPanel: React.FC = () => {
   
   const [currentIndex, setCurrentIndex] = useState(-1);
   const lyricRef = useRef<HTMLUListElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // 获取歌词数据（原歌词和翻译歌词）
   useEffect(() => {
@@ -75,15 +76,28 @@ const LyricPanel: React.FC = () => {
   }, [currentLyrics, currentIndex, audioRef]);
 
   useEffect(() => {
-    if (lyricRef.current && currentIndex !== -1) {
+    if (scrollContainerRef.current && lyricRef.current && currentIndex !== -1) {
       const activeItem = lyricRef.current.children[currentIndex] as HTMLElement;
-      if (activeItem) {
-        const containerHeight = lyricRef.current.parentElement?.clientHeight || 0;
-        const offset = activeItem.offsetTop - containerHeight / 2 + activeItem.clientHeight / 2;
-        lyricRef.current.style.transform = `translateY(${-offset}px)`;
+      const container = scrollContainerRef.current;
+      if (activeItem && container) {
+        const containerHeight = container.clientHeight;
+        const activeItemTop = activeItem.offsetTop;
+        const activeItemHeight = activeItem.clientHeight;
+        
+        // 计算滚动位置，使当前行居中
+        const scrollTop = activeItemTop - (containerHeight / 2) + (activeItemHeight / 2);
+        
+        // 边界检查
+        const maxScrollTop = lyricRef.current.clientHeight - containerHeight;
+        const targetScrollTop = Math.max(0, Math.min(scrollTop, maxScrollTop));
+        
+        container.scrollTo({
+          top: targetScrollTop,
+          behavior: 'smooth'
+        });
       }
-    } else if (lyricRef.current) {
-        lyricRef.current.style.transform = `translateY(0)`;
+    } else if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }, [currentIndex]);
 
@@ -111,17 +125,20 @@ const LyricPanel: React.FC = () => {
         </div>
       )}
       
-      <ul id="lyric" ref={lyricRef} style={{ transition: 'transform 0.3s ease-out' }}>
-        {currentLyrics.length > 0 ? (
-          currentLyrics.map((line, index) => (
-            <li key={index} className={index === currentIndex ? 'lyric-next' : ''}>
-              {line.text}
-            </li>
-          ))
-        ) : (
-          <li>{playlist === undefined ? 'MKOnlinePlayer' : '没有歌词'}</li>
-        )}
-      </ul>
+      {/* 歌词滚动容器 */}
+      <div className="lyric-scroll-container" ref={scrollContainerRef}>
+        <ul id="lyric" ref={lyricRef} style={{ transition: 'transform 0.3s ease-out' }}>
+          {currentLyrics.length > 0 ? (
+            currentLyrics.map((line, index) => (
+              <li key={index} className={index === currentIndex ? 'lyric-next' : ''}>
+                {line.text}
+              </li>
+            ))
+          ) : (
+            <li>{playlist === undefined ? 'MKOnlinePlayer' : '没有歌词'}</li>
+          )}
+        </ul>
+      </div>
     </div>
   );
 };

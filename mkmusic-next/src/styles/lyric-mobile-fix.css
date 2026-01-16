@@ -1,0 +1,332 @@
+/*===========================================
+ * Next.js 版本歌词滚动问题修复 - 移动端专用样式
+ * 修复问题：
+ * 1. 歌词随着歌曲播放逐渐消失
+ * 2. 歌词与翻译按钮重叠
+ * 3. 滚动不流畅
+ ===========================================*/
+
+/* 基础样式修复 =================================================== */
+/* 确保歌词容器高度正确计算 */
+.lyric {
+  /* 添加最小高度，防止高度塌陷 */
+  min-height: 200px;
+  /* 确保overflow设置正确 */
+  overflow: hidden;
+  /* 添加背景，防止歌词透明 */
+  background: transparent;
+}
+
+/* 歌词滚动容器 - 核心修复 */
+.lyric-scroll-container {
+  /* 明确设置高度计算方式 */
+  height: 100%;
+  min-height: 0; /* 重要：修复flex布局问题 */
+  /* 设置正确的overflow */
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch; /* iOS滚动优化 */
+}
+
+/* 歌词列表样式修复 */
+#lyric {
+  /* 设置相对定位，便于正确计算位置 */
+  position: relative;
+  /* 添加足够的padding，确保歌词可见 */
+  padding: 80px 0 !important; /* 增加上下padding */
+  /* 设置最小高度 */
+  min-height: 100%; /* 确保至少占满容器 */
+  /* 防止margin塌陷 */
+  margin-top: 0;
+  margin-bottom: 0;
+  /* 确保行内元素正确显示 */
+  line-height: 1.8;
+}
+
+/* 每行歌词样式修复 */
+#lyric > li {
+  /* 设置合适的间距 */
+  padding: 8px 0 !important;
+  /* 确保不透明 */
+  opacity: 1 !important;
+  visibility: visible !important;
+  /* 设置最小显示高度 */
+  min-height: 1.8em;
+  /* 确保文字不换行问题修复 */
+  word-break: break-word !important;
+  white-space: normal !important;
+  /* 设置过渡动画 */
+  transition: all 0.3s ease;
+}
+
+/* 当前播放行高亮样式 */
+#lyric .lyric-next,
+#lyric .lplaying {
+  /* 确保高亮可见 */
+  opacity: 1 !important;
+  color: #31c27c !important;
+  /* 添加缩放效果 */
+  transform: scale(1.05);
+  /* 添加阴影效果 */
+  text-shadow: 0 0 10px rgba(49, 194, 124, 0.5);
+}
+
+/* 翻译切换按钮 - 防止重叠 */
+.lyric-toggle {
+  /* 固定定位，不随滚动移动 */
+  position: absolute !important;
+  top: 15px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  /* 确保在歌词上方 */
+  z-index: 999 !important;
+  /* 添加背景，防止按钮透明 */
+  background: rgba(0, 0, 0, 0.8) !important;
+  backdrop-filter: blur(5px);
+  /* 添加阴影，更容易识别 */
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  /* 设置合适的尺寸 */
+  padding: 8px !important;
+  /* 防止点击穿透 */
+  pointer-events: auto !important;
+  /* 防止被其他元素遮挡 */
+  isolation: isolate;
+}
+
+.toggle-btn {
+  /* 确保按钮可点击 */
+  pointer-events: auto !important;
+  user-select: none;
+  /* 设置合适的间距 */
+  margin: 0 5px !important;
+  /* 确保不透明 */
+  opacity: 1 !important;
+  /* 添加点击反馈 */
+  transition: all 0.2s ease;
+}
+
+.toggle-btn:active {
+  /* 添加点击效果 */
+  transform: scale(0.95) !important;
+}
+
+/* 移动端适配 - 900px以下 ================================================== */
+@media screen and (max-width: 900px) {
+  /* 歌词容器 - 手机端 */
+  .lyric {
+    /* 调整顶部位置，为按钮留出空间 */
+    top: 260px;
+    bottom: 10px;
+    /* 明确设置高度 */
+    height: calc(100% - 270px);
+    /* 确保overflow正确 */
+    overflow: hidden;
+    /* 添加背景 */
+    background: transparent;
+  }
+  
+  /* 歌词滚动容器 - 手机端 */
+  .lyric-scroll-container {
+    /* 设置明确的高度 */
+    height: 100%;
+    min-height: 100px;
+    /* 移除可能的margin和padding */
+    margin: 0;
+    padding: 0;
+    /* 设置正确的overflow */
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+  }
+  
+  /* 歌词列表 - 手机端 */
+  #lyric {
+    /* 增加更多的padding，防止第一行和最后一行被遮挡 */
+    padding: 100px 0 !important;
+    /* 设置字体大小 */
+    font-size: 15px;
+    /* 设置行高 */
+    line-height: 2;
+    /* 确保高度正确 */
+    min-height: 100%;
+  }
+  
+  /* 每行歌词 - 手机端 */
+  #lyric > li {
+    /* 增加间距 */
+    padding: 10px 15px !important;
+    /* 允许文字换行 */
+    white-space: normal !important;
+    word-break: break-word !important;
+    /* 设置合适的字体大小 */
+    font-size: 15px;
+    /* 设置合适的行高 */
+    line-height: 1.8;
+    /* 确保不透明 */
+    opacity: 1 !important;
+  }
+  
+  /* 当前播放行 - 手机端 */
+  #lyric .lyric-next {
+    font-size: 16px !important;
+    font-weight: 500;
+    /* 添加发光效果 */
+    text-shadow: 0 0 15px rgba(49, 194, 124, 0.7);
+  }
+  
+  /* 翻译按钮 - 手机端 */
+  .lyric-toggle {
+    /* 调整大小 */
+    padding: 6px 10px !important;
+    /* 确保在小屏幕上也能看到 */
+    top: 10px !important;
+    /* 调整按钮大小 */
+    gap: 5px;  
+    /* 缩小圆角 */
+    border-radius: 15px !important;
+  }
+  
+  .toggle-btn {
+    /* 调整字体大小 */
+    font-size: 11px !important;
+    /* 调整padding */
+    padding: 4px 12px !important;
+    /* 确保可点击区域足够大 */
+    min-height: 28px;
+    /* 设置合适的宽度 */
+    flex: 1;
+    text-align: center;
+  }
+}
+
+/* 小屏幕适配 - 600px以下 ================================================ */
+@media screen and (max-width: 600px) {
+  /* 歌词容器 - 小屏幕 */
+  .lyric {
+    top: 240px;
+    /* 增加高度 */
+    height: calc(100% - 250px);
+    left: 5px;
+    right: 5px;
+  }
+  
+  /* 歌词列表 - 小屏幕 */
+  #lyric {
+    /* 增加padding，确保内容不被遮挡 */
+    padding: 120px 0 !important;
+    /* 调整字体大小 */
+    font-size: 14px;
+    line-height: 1.8;
+  }
+  
+  /* 每行歌词 - 小屏幕 */
+  #lyric > li {
+    /* 增加间距 */
+    padding: 8px 10px !important;
+    /* 调整字体大小 */
+    font-size: 14px;
+    /* 设置行高 */
+    line-height: 1.6;
+  }
+  
+  /* 当前播放行 - 小屏幕 */
+  #lyric .lyric-next {
+    font-size: 15px !important;
+    font-weight: 500;
+  }
+  
+  /* 翻译按钮 - 小屏幕 */
+  .lyric-toggle {
+    padding: 4px 6px !important;
+    gap: 3px;
+  }
+  
+  .toggle-btn {
+    font-size: 10px !important;
+    padding: 3px 10px !important;
+    min-height: 24px;
+  }
+}
+
+/* 超小屏幕适配 - 400px以下 ============================================== */
+@media screen and (max-width: 400px) {
+  /* 歌词容器 - 超小屏幕 */
+  .lyric {
+    top: 220px;
+    height: calc(100% - 230px);
+    left: 5px;
+    right: 5px;
+  }
+  
+  /* 歌词列表 - 超小屏幕 */
+  #lyric {
+    padding: 100px 0 !important;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+  
+  /* 每行歌词 - 超小屏幕 */
+  #lyric > li {
+    padding: 6px 5px !important;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  
+  /* 当前播放行 - 超小屏幕 */
+  #lyric .lyric-next {
+    font-size: 14px !important;
+  }
+}
+
+/* 性能优化 & 滚动流畅性 =============================================== */
+/* 启用硬件加速 */
+#lyric, #lyric > li, .lyric-scroll-container {
+  -webkit-transform: translateZ(0);
+  -moz-transform: translateZ(0);
+  -ms-transform: translateZ(0);
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  -moz-backface-visibility: hidden;
+  -ms-backface-visibility: hidden;
+  backface-visibility: hidden;
+  -webkit-perspective: 1000;
+  -moz-perspective: 1000;
+  -ms-perspective: 1000;
+  perspective: 1000;
+}
+
+/* 优化滚动性能 */
+.lyric-scroll-container {
+  will-change: scroll-position;
+}
+
+/* 防止文字模糊 */
+#lyric > li {
+  -webkit-font-smoothing: subpixel-antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* 暗色模式优化（如果需要） */
+@media (prefers-color-scheme: dark) {
+  .lyric-toggle {
+    background: rgba(0, 0, 0, 0.85) !important;
+  }
+}
+
+/* 高对比度模式优化（可访问性） */
+@media (prefers-contrast: high) {
+  .lyric-toggle {
+    background: #000 !important;
+    border: 1px solid #fff;
+  }
+  
+  .toggle-btn {
+    border-width: 2px;
+  }
+  
+  #lyric .lyric-next {
+    text-shadow: none;
+    font-weight: bold;
+    -webkit-text-stroke: 1px #31c27c;
+  }
+}

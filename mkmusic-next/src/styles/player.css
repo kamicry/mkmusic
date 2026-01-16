@@ -520,7 +520,7 @@ body {
     height: 186px;
 }
 
-/* 歌词显示区域 */
+/* 歌词显示区域 - 修复滚动消失问题 */
 .lyric {
     position: absolute;
     left: 10px;
@@ -535,36 +535,48 @@ body {
     padding: 10px 0 20px 0;
     display: flex;
     flex-direction: column;
+    z-index: 10; /* 确保在适当层级 */
 }
 
-/* 歌词切换按钮 */
+/* 歌词切换按钮 - 防止与歌词重叠 */
 .lyric-toggle {
+    position: absolute;
+    top: 15px;
+    left: 50%;
+    transform: translateX(-50%);
     display: flex;
     gap: 10px;
-    padding: 10px 0;
+    padding: 6px;
     border-bottom: 1px solid rgba(150,150,150,.2);
     justify-content: center;
     flex-shrink: 0;
     margin-bottom: 10px;
+    z-index: 100; /* 确保在歌词上方 */
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+    border-radius: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    user-select: none;
 }
 
 .toggle-btn {
     padding: 6px 16px;
-    background: rgba(255,255,255,.1);
-    border: 1px solid rgba(255,255,255,.2);
+    background: rgba(255,255,255,.2);
+    border: 1px solid rgba(255,255,255,.3);
     border-radius: 15px;
     cursor: pointer;
     font-size: 12px;
     transition: all 0.3s;
-    color: rgba(225,225,225,.8);
+    color: #999;
     font-family: poppin, 'PingFang SC', Tahoma, Arial, \5FAE\8F6F\96C5\9ED1, sans-serif;
     outline: none;
+    white-space: nowrap;
 }
 
 .toggle-btn:hover {
-    background: rgba(255,255,255,.15);
-    border-color: rgba(255,255,255,.3);
-    color: #fff;
+    background: rgba(255,255,255,.3);
+    border-color: rgba(255,255,255,.4);
+    color: #ccc;
 }
 
 .toggle-btn.active {
@@ -577,19 +589,40 @@ body {
     background: #2db274;
     border-color: #2db274;
 }
-/* 歌词ul */
-#lyric {
+
+.toggle-btn:active {
+    transform: scale(0.95);
+}
+
+/* 歌词滚动容器 - 修复滚动消失问题 */
+.lyric-scroll-container {
     position: absolute;
     width: 100%;
+    height: 100%;
     top: 0;
-    bottom: 0;
-    overflow: hidden;
+    left: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
+
+/* 歌词列表 */
+#lyric {
+    position: relative;
+    width: 100%;
+    margin: 0;
+    padding: 60px 0;
+    list-style: none;
+    min-height: 100%;
+}
+
 #lyric>li {
     word-break: keep-all;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    padding: 4px 0;
+    line-height: 1.6;
+    transition: all 0.3s;
 }
 /* 正在播放的那一句歌词 */
 #lyric .lplaying,
@@ -606,6 +639,7 @@ body {
     position: absolute;
     width: 100%;
     top: 50%;
+    left: 0;
 }
 
 /* 列表中的歌曲信息按钮 */
