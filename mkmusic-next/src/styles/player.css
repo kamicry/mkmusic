@@ -532,7 +532,50 @@ body {
     color: #bdbdbe;
     color: rgba(225,225,225,.8);
     line-height: 28px;
-    padding: 20px 0;
+    padding: 10px 0 20px 0;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 歌词切换按钮 */
+.lyric-toggle {
+    display: flex;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(150,150,150,.2);
+    justify-content: center;
+    flex-shrink: 0;
+    margin-bottom: 10px;
+}
+
+.toggle-btn {
+    padding: 6px 16px;
+    background: rgba(255,255,255,.1);
+    border: 1px solid rgba(255,255,255,.2);
+    border-radius: 15px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.3s;
+    color: rgba(225,225,225,.8);
+    font-family: poppin, 'PingFang SC', Tahoma, Arial, \5FAE\8F6F\96C5\9ED1, sans-serif;
+    outline: none;
+}
+
+.toggle-btn:hover {
+    background: rgba(255,255,255,.15);
+    border-color: rgba(255,255,255,.3);
+    color: #fff;
+}
+
+.toggle-btn.active {
+    background: #31c27c;
+    color: white;
+    border-color: #31c27c;
+}
+
+.toggle-btn.active:hover {
+    background: #2db274;
+    border-color: #2db274;
 }
 /* 歌词ul */
 #lyric {

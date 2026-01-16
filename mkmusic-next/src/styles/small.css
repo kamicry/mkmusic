@@ -132,6 +132,17 @@
     .lyric {
         top: 260px;
     }
+    
+    /* 歌词切换按钮响应式调整 */
+    .lyric-toggle {
+        padding: 8px 0;
+        gap: 8px;
+    }
+    
+    .toggle-btn {
+        padding: 5px 12px;
+        font-size: 11px;
+    }
 }
 
 /* 小于 620px 采用这个样式 */
