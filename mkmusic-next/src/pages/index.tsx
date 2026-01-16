@@ -42,39 +42,6 @@ export default function Home() {
   const [view, setView] = useState<'list' | 'sheet' | 'player'>('list');
   const [isMobile, setIsMobile] = useState(false);
 
-  const loadPlaylist = async (lid: string, index: number) => {
-    try {
-      const data = await ajaxPlaylist(lid);
-      setMusicList(prev => {
-        const newList = [...prev];
-        newList[index] = {
-          id: lid,
-          name: data.playlist.name,
-          cover: data.playlist.coverImgUrl + "?param=200y200",
-          item: data.playlist.tracks.map((track: any) => ({
-            id: track.id,
-            name: track.name,
-            artist: track.ar[0].name,
-            album: track.al.name,
-            source: "netease",
-            url_id: track.id,
-            pic_id: null,
-            lyric_id: track.id,
-            pic: track.al.picUrl + "?param=300y300",
-            url: null
-          }))
-        };
-        return newList;
-      });
-      // 移除自动设置 dislist 的逻辑，避免与默认显示冲突
-      // if (index === 3) {
-      //     setDislist(3);
-      // }
-    } catch (error) {
-      console.error('Failed to load playlist', error);
-    }
-  };
-
   useEffect(() => {
     // Check if mobile device
     const checkMobile = () => {
@@ -83,13 +50,45 @@ export default function Home() {
     checkMobile();
     window.addEventListener('resize', checkMobile);
     
+    // 初始化时只设置默认歌单列表，不依赖 loadPlaylist
     setMusicList(defaultMusicList);
     
-    // Load default playlist
-    loadPlaylist("3778678", 3); // 云音乐热歌榜
-    
     return () => window.removeEventListener('resize', checkMobile);
-  }, [loadPlaylist, setMusicList]);
+  }, []);
+
+  // 单独加载默认播放列表的 useEffect，不依赖其他状态
+  useEffect(() => {
+    const loadDefaultPlaylist = async () => {
+      try {
+        const data = await ajaxPlaylist("3778678"); // 云音乐热歌榜
+        setMusicList(prev => {
+          const newList = [...prev];
+          newList[3] = {
+            id: "3778678",
+            name: data.playlist.name,
+            cover: data.playlist.coverImgUrl + "?param=200y200",
+            item: data.playlist.tracks.map((track: any) => ({
+              id: track.id,
+              name: track.name,
+              artist: track.ar[0].name,
+              album: track.al.name,
+              source: "netease",
+              url_id: track.id,
+              pic_id: null,
+              lyric_id: track.id,
+              pic: track.al.picUrl + "?param=300y300",
+              url: null
+            }))
+          };
+          return newList;
+        });
+      } catch (error) {
+        console.error('Failed to load default playlist', error);
+      }
+    };
+
+    loadDefaultPlaylist();
+  }, []);
 
   // Initialize and update play history in musicList when playHistory changes
   useEffect(() => {
@@ -105,7 +104,7 @@ export default function Home() {
       };
       return newList;
     });
-  }, [playHistory, setMusicList]);
+  }, [playHistory]); // 只依赖 playHistory，避免循环依赖
 
   // Set initial view to show play history after component mounts
   useEffect(() => {
