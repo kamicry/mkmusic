@@ -519,7 +519,7 @@ body {
     height: 186px;
 }
 
-/* 歌词显示区域 */
+/* 歌词显示区域 - 修复滚动消失问题 */
 .lyric {
     position: absolute;
     left: 10px;
@@ -532,30 +532,85 @@ body {
     color: rgba(225,225,225,.8);
     line-height: 28px;
     padding: 20px 0;
+    z-index: 10; /* 确保在适当层级 */
 }
-/* 歌词ul */
-#lyric {
+/* 歌词滚动容器 */
+.lyric-scroll-container {
     position: absolute;
     width: 100%;
+    height: 100%;
     top: 0;
-    bottom: 0;
-    overflow: hidden;
+    left: 0;
+    overflow-y: auto; /* 允许垂直滚动 */
+    overflow-x: hidden; /* 隐藏水平滚动 */
+}
+/* 歌词列表 */
+#lyric {
+    position: relative;
+    width: 100%;
+    margin: 0;
+    padding: 40px 0; /* 增加上下padding，确保首行和末行居中 */
+    list-style: none;
+    min-height: 100%; /* 确保至少占满容器 */
 }
 #lyric>li {
     word-break: keep-all;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    padding: 4px 0; /* 增加上下padding */
+    line-height: 1.6;
+    transition: all 0.3s;
 }
 /* 正在播放的那一句歌词 */
 #lyric .lplaying {
     color: #31c27c;
+    font-size: 15px;
+    font-weight: bold;
+    transform: scale(1.05);
 }
 /* 歌词显示区显示的提示语(如加载中、无歌词等) */
 .lyric-tip {
     position: absolute;
     width: 100%;
     top: 50%;
+    left: 0;
+}
+/* 翻译切换按钮 - 防止歌词重叠 */
+.lyric-toggle {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 10px;
+    z-index: 100; /* 确保在歌词上方 */
+    background: rgba(0, 0, 0, 0.7);
+    padding: 5px;
+    border-radius: 20px;
+    backdrop-filter: blur(5px);
+}
+.toggle-btn {
+    padding: 4px 12px;
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 15px;
+    cursor: pointer;
+    font-size: 12px;
+    color: #999;
+    transition: all 0.3s;
+    outline: none;
+    user-select: none;
+    white-space: nowrap;
+}
+.toggle-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    color: #ccc;
+}
+.toggle-btn.active {
+    background: rgba(49, 194, 124, 0.8);
+    color: #fff;
+    border-color: rgba(49, 194, 124, 0.5);
 }
 
 /* 歌曲信息按钮 */
