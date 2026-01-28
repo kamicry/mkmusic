@@ -1,0 +1,165 @@
+/**
+ * SongInfoModal Styles
+ * 歌曲信息详情模态框样式
+ */
+
+.song-info-modal {
+  /* 模态框动画 */
+  animation: fadeInScale 0.3s ease-out;
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+/* 自定义滚动条样式 */
+.song-info-modal-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.song-info-modal-scroll::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.song-info-modal-scroll::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.song-info-modal-scroll::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* 链接输入框样式增强 */
+.song-info-link-input {
+  font-family: 'Courier New', monospace;
+  word-break: break-all;
+  line-height: 1.4;
+}
+
+/* 按钮悬停效果增强 */
+.song-info-button {
+  transition: all 0.2s ease;
+  transform: translateY(0);
+}
+
+.song-info-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.song-info-button:active {
+  transform: translateY(0);
+}
+
+/* 封面图片悬停效果 */
+.song-info-cover-image {
+  transition: all 0.3s ease;
+}
+
+.song-info-cover-image:hover {
+  transform: scale(1.02);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* 响应式设计 */
+@media (max-width: 640px) {
+  .song-info-modal-mobile {
+    width: 95vw !important;
+    max-width: none !important;
+    margin: 0 !important;
+  }
+  
+  .song-info-grid-mobile {
+    grid-template-columns: 1fr !important;
+  }
+  
+  .song-info-buttons-mobile {
+    flex-direction: column !important;
+  }
+  
+  .song-info-buttons-mobile button {
+    width: 100% !important;
+    margin-bottom: 8px !important;
+  }
+  
+  .song-info-buttons-mobile button:last-child {
+    margin-bottom: 0 !important;
+  }
+}
+
+/* 深色主题支持 */
+@media (prefers-color-scheme: dark) {
+  .song-info-modal-dark {
+    background-color: #1f2937 !important;
+    color: #f9fafb !important;
+  }
+  
+  .song-info-modal-dark .song-info-section {
+    background-color: #374151 !important;
+  }
+  
+  .song-info-modal-dark .song-info-input {
+    background-color: #4b5563 !important;
+    border-color: #6b7280 !important;
+    color: #f9fafb !important;
+  }
+  
+  .song-info-modal-dark .song-info-label {
+    color: #d1d5db !important;
+  }
+}
+
+/* 加载状态动画 */
+.song-info-loading {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* 复制成功提示动画 */
+.song-info-copy-success {
+  animation: copySuccess 0.6s ease-out;
+}
+
+@keyframes copySuccess {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+    background-color: #10b981 !important;
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* 错误状态样式 */
+.song-info-error {
+  border-left: 4px solid #ef4444;
+  background-color: #fef2f2;
+  color: #dc2626;
+}
+
+/* 成功状态样式 */
+.song-info-success {
+  border-left: 4px solid #10b981;
+  background-color: #f0fdf4;
+  color: #059669;
+}

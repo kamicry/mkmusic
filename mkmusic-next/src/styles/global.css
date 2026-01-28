@@ -4,6 +4,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Import custom component styles */
+@import './song-info-modal.css';
+
 /* Custom animations */
 @keyframes dotShine {
   0%, 100% { opacity: 0.3; }
