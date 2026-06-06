@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Head from 'next/head';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -10,7 +10,7 @@ import SearchPanel from '../components/SearchPanel';
 import MusicInfoPanel from '../components/MusicInfoPanel';
 import { usePlayerContext } from '../contexts/PlayerContext';
 import { defaultMusicList } from '../utils/musicList';
-import { ajaxSearch, ajaxUrl, ajaxPlaylist, ajaxPic } from '../utils/api';
+import { ApiSearchResult, ajaxSearch, ajaxUrl, ajaxPlaylist, ajaxPic } from '../utils/api';
 import { useLayer } from '../hooks/useLayer';
 import { Music } from '../types';
 
@@ -31,7 +31,6 @@ export default function Home() {
     bitRate,
     playHistory,
     addToPlayHistory,
-    setPlayHistory,
     clearPlayHistoryCtx,
   } = usePlayerContext();
 
@@ -41,6 +40,8 @@ export default function Home() {
   const [selectedMusicIndex, setSelectedMusicIndex] = useState<number | null>(null);
   const [view, setView] = useState<'list' | 'sheet' | 'player'>('list');
   const [isMobile, setIsMobile] = useState(false);
+  const lastLoadedAudioKeyRef = useRef<string>('');
+  const currentMusicRef = useRef<Music | null>(null);
 
   useEffect(() => {
     // Check if mobile device
@@ -58,19 +59,34 @@ export default function Home() {
 
   // 单独加载默认播放列表的 useEffect，不依赖其他状态
   useEffect(() => {
+    interface PlaylistTrack {
+      id: string;
+      name: string;
+      ar: Array<{ name: string }>;
+      al: { name: string; picUrl: string };
+    }
+
+    interface PlaylistResponse {
+      playlist: {
+        name: string;
+        coverImgUrl: string;
+        tracks: PlaylistTrack[];
+      };
+    }
+
     const loadDefaultPlaylist = async () => {
       try {
-        const data = await ajaxPlaylist("3778678"); // 云音乐热歌榜
+        const data = await ajaxPlaylist<PlaylistResponse>("3778678"); // 云音乐热歌榜
         setMusicList(prev => {
           const newList = [...prev];
           newList[3] = {
             id: "3778678",
             name: data.playlist.name,
             cover: data.playlist.coverImgUrl + "?param=200y200",
-            item: data.playlist.tracks.map((track: any) => ({
+            item: data.playlist.tracks.map((track) => ({
               id: track.id,
               name: track.name,
-              artist: track.ar[0].name,
+              artist: track.ar[0]?.name || '',
               album: track.al.name,
               source: "netease",
               url_id: track.id,
@@ -120,7 +136,7 @@ export default function Home() {
     setLoadPage(page);
     try {
       const results = await ajaxSearch(wd, source as any, page, 20);
-      const items: Music[] = results.map((item: any) => ({
+      const items: Music[] = results.map((item: ApiSearchResult) => ({
         id: item.id,
         name: item.name,
         artist: Array.isArray(item.artist) ? item.artist[0] : item.artist,
@@ -135,6 +151,7 @@ export default function Home() {
       setMusicList(prev => {
         const newList = [...prev];
         newList[0].item = items;
+        newList[1].item = items;
         return newList;
       });
       setDislist(0);
@@ -147,31 +164,22 @@ export default function Home() {
 
   const handleItemClick = async (index: number) => {
     if (dislist === 0) { // From search
-        const music = musicList[0].item[index];
-        const playingList = [...musicList[1].item];
-        const existingIndex = playingList.findIndex(m => m.id === music.id && m.source === music.source);
-        if (existingIndex !== -1) {
-            setPlaylist(1);
-            setPlayid(existingIndex);
-        } else {
-            playingList.splice(playid + 1, 0, music);
-            setMusicList(prev => {
-                const newList = [...prev];
-                newList[1].item = playingList;
-                return newList;
-            });
-            setPlaylist(1);
-            setPlayid(playid + 1);
-        }
+        setMusicList(prev => {
+            const newList = [...prev];
+            newList[1].item = [...prev[0].item];
+            return newList;
+        });
+        setPlaylist(1);
+        setPlayid(index);
     } else {
-        if (dislist !== playlist) {
+        if (dislist !== 1) {
             setMusicList(prev => {
                 const newList = [...prev];
                 newList[1].item = [...prev[dislist].item];
                 return newList;
             });
-            setPlaylist(dislist);
         }
+        setPlaylist(1);
         setPlayid(index);
     }
   };
@@ -181,52 +189,104 @@ export default function Home() {
     setShowMusicInfo(true);
   };
 
-  useEffect(() => {
-    if (playlist !== undefined) {
-      const music = musicList[playlist]?.item[playid];
-      if (music && audioRef.current) {
-        // Fetch album cover if not already loaded
-        if (!music.pic) {
-          ajaxPic(music).then(picUrl => {
-            if (picUrl) {
-              music.pic = picUrl;
-              // Update the music list to trigger re-render
-              setMusicList([...musicList]);
-            }
-          }).catch(error => {
-            console.error('Failed to fetch album cover:', error);
-          });
-        }
-
-        // Fetch music URL
-        if (!music.url) {
-            ajaxUrl(music, bitRate).then(result => {
-                if (result.url && result.url !== 'err') {
-                    music.url = result.url;
-                    if (audioRef.current) {
-                      audioRef.current.src = result.url;
-                      audioRef.current.play();
-                    }
-                    // Add to play history when music starts playing
-                    addToPlayHistory(music);
-                } else {
-                    msg('歌曲链接获取失败');
-                }
-            }).catch(error => {
-                const errorMessage = error instanceof Error ? error.message : '歌曲链接获取失败';
-                msg(errorMessage);
-            });
-        } else {
-            audioRef.current.src = music.url;
-            audioRef.current.play();
-            // Add to play history when music starts playing
-            addToPlayHistory(music);
-        }
-      }
-    }
-  }, [playlist, playid, musicList, audioRef, bitRate, setMusicList, addToPlayHistory, msg]);
-
   const currentMusic = playlist !== undefined ? musicList[playlist]?.item[playid] : null;
+  const currentMusicKey = currentMusic
+    ? `${playlist}:${playid}:${currentMusic.source}:${currentMusic.id}:${currentMusic.url_id}:${currentMusic.pic_id ?? ''}`
+    : '';
+
+  useEffect(() => {
+    currentMusicRef.current = currentMusic;
+  }, [currentMusic]);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    const music = currentMusicRef.current;
+    if (!music || !audio || playlist === undefined || !currentMusicKey) {
+      return;
+    }
+
+    const playbackKey = `${currentMusicKey}:${bitRate}`;
+    if (lastLoadedAudioKeyRef.current === playbackKey) {
+      return;
+    }
+
+    lastLoadedAudioKeyRef.current = playbackKey;
+    let cancelled = false;
+
+    const updateCurrentMusic = (updates: Partial<Music>) => {
+      setMusicList(prev => {
+        const list = prev[playlist];
+        const item = list?.item[playid];
+
+        if (!item || item.id !== music.id || item.source !== music.source) {
+          return prev;
+        }
+
+        const next = [...prev];
+        next[playlist] = {
+          ...list,
+          item: list.item.map((entry, index) => (
+            index === playid ? { ...entry, ...updates } : entry
+          ))
+        };
+        return next;
+      });
+    };
+
+    if (!music.pic) {
+      ajaxPic(music).then(picUrl => {
+        if (!cancelled && picUrl) {
+          updateCurrentMusic({ pic: picUrl });
+        }
+      }).catch(error => {
+        console.error('Failed to fetch album cover:', error);
+      });
+    }
+
+    const loadAudio = async () => {
+      try {
+        let musicUrl = music.url;
+
+        if (!musicUrl) {
+          const result = await ajaxUrl(music, bitRate);
+          if (!result.url || result.url === 'err') {
+            if (lastLoadedAudioKeyRef.current === playbackKey) {
+              lastLoadedAudioKeyRef.current = '';
+            }
+            msg('歌曲链接获取失败');
+            return;
+          }
+          musicUrl = result.url;
+          updateCurrentMusic({ url: musicUrl });
+        }
+
+        if (cancelled || !musicUrl) {
+          return;
+        }
+
+        audio.src = musicUrl;
+        lastLoadedAudioKeyRef.current = playbackKey;
+
+        await audio.play();
+        addToPlayHistory({ ...music, url: musicUrl });
+      } catch (error) {
+        if (cancelled) {
+          return;
+        }
+        if (lastLoadedAudioKeyRef.current === playbackKey) {
+          lastLoadedAudioKeyRef.current = '';
+        }
+        const errorMessage = error instanceof Error ? error.message : '歌曲链接获取失败';
+        msg(errorMessage);
+      }
+    };
+
+    loadAudio();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [currentMusicKey, playlist, playid, audioRef, bitRate, setMusicList, addToPlayHistory, msg]);
 
   return (
     <>

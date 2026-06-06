@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useState, useRef, useEffect } from 'react';
-import { Music, Playlist, OrderMode, Config, LyricLine } from '../types';
+import React, { createContext, useContext, useState, useRef, useEffect, useCallback } from 'react';
+import { Music, Playlist, OrderMode, LyricLine } from '../types';
 import { API_CONFIG, BitRate } from '../config/api.config';
 import { getPlayHistory, savePlayHistory, clearPlayHistory, removePlayHistoryItem } from '../utils/storage';
 
@@ -98,7 +98,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   }, []);
 
   // Play history management functions
-  const addToPlayHistory = (music: Music) => {
+  const addToPlayHistory = useCallback((music: Music) => {
     try {
       savePlayHistory(music);
       const updatedHistory = getPlayHistory();
@@ -106,16 +106,16 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     } catch (error) {
       console.error('Failed to add to play history:', error);
     }
-  };
+  }, []);
 
-  const clearPlayHistoryCtx = () => {
+  const clearPlayHistoryCtx = useCallback(() => {
     try {
       clearPlayHistory();
       setPlayHistory([]);
     } catch (error) {
       console.error('Failed to clear play history:', error);
     }
-  };
+  }, []);
 
   useEffect(() => {
     const checkMobile = () => {

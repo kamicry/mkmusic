@@ -1,45 +1,70 @@
 import { Music } from '../types';
-import { API_CONFIG, buildApiUrl, rateLimiter, BitRate, MusicSource } from '../config/api.config';
+import { API_CONFIG, buildApiUrl, BitRate, MusicSource } from '../config/api.config';
 
 /**
  * GD Studio Music API Utilities
  * 
  * This module provides functions to interact with the GD Studio's Online Music Platform API.
- * All functions use the new API endpoints and follow the rate limiting requirements.
+ * All functions use the new API endpoints.
  */
 
+const inFlightRequests = new Map<string, Promise<unknown>>();
+
+type ApiObject = Record<string, unknown>;
+
+const asApiObject = (data: unknown): ApiObject => (
+  data && typeof data === 'object' ? data as ApiObject : {}
+);
+
+export interface ApiSearchResult {
+  id: string;
+  name: string;
+  artist: string | string[];
+  album: string;
+  source: string;
+  url_id?: string;
+  pic_id?: string;
+  lyric_id?: string;
+}
+
 // Helper for making API requests with rate limiting
-async function request(params: Record<string, any>): Promise<any> {
-  // Check rate limit
-  if (!rateLimiter.canMakeRequest()) {
-    const remaining = rateLimiter.getRemainingRequests();
-    throw new Error(`请求过于频繁，请稍后重试 (剩余请求数: ${remaining})`);
-  }
-  
-  // Build URL
+async function request(params: Record<string, string | number>): Promise<unknown> {
   const url = buildApiUrl(params);
-  
-  try {
-    // Record request for rate limiting
-    rateLimiter.recordRequest();
-    
-    // Make request with timeout
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000);
-    
-    const response = await fetch(url, { signal: controller.signal });
-    clearTimeout(timeoutId);
-    
-    if (!response.ok) {
-      if (response.status === 403) {
-        throw new Error('请求过于频繁，请稍后重试');
-      } else if (response.status === 404) {
-        throw new Error('资源不存在');
+
+  const pendingRequest = inFlightRequests.get(url);
+  if (pendingRequest) {
+    return pendingRequest;
+  }
+
+  const requestPromise = (async () => {
+    const hasAbortController = typeof AbortController !== 'undefined';
+    const controller = hasAbortController ? new AbortController() : null;
+    const timeoutId = controller ? setTimeout(() => controller.abort(), 10000) : null;
+
+    try {
+      const response = await fetch(url, controller ? { signal: controller.signal } : undefined);
+
+      if (!response.ok) {
+        if (response.status === 403) {
+          throw new Error('请求过于频繁，请稍后重试');
+        } else if (response.status === 404) {
+          throw new Error('资源不存在');
+        }
+        throw new Error(`API request failed: ${response.status}`);
       }
-      throw new Error(`API request failed: ${response.status}`);
+
+      return response.json();
+    } finally {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
     }
-    
-    return response.json();
+  })();
+
+  inFlightRequests.set(url, requestPromise);
+
+  try {
+    return await requestPromise;
   } catch (error) {
     if (error instanceof Error) {
       if (error.name === 'AbortError') {
@@ -48,6 +73,8 @@ async function request(params: Record<string, any>): Promise<any> {
       throw error;
     }
     throw new Error('请求失败，请检查网络');
+  } finally {
+    inFlightRequests.delete(url);
   }
 }
 
@@ -64,7 +91,7 @@ export const ajaxSearch = async (
   source: MusicSource = 'netease',
   page: number = 1,
   count: number = API_CONFIG.pageSize
-): Promise<any[]> => {
+): Promise<ApiSearchResult[]> => {
   const data = await request({
     types: API_CONFIG.endpoints.search,
     name: keyword,
@@ -74,7 +101,7 @@ export const ajaxSearch = async (
   });
   
   // Return array of results
-  return Array.isArray(data) ? data : [];
+  return Array.isArray(data) ? data as ApiSearchResult[] : [];
 };
 
 /**
@@ -87,17 +114,17 @@ export const ajaxUrl = async (
   music: Music,
   bitRate: BitRate = API_CONFIG.defaultBitRate
 ): Promise<{ url: string; br: number; size: number }> => {
-  const data = await request({
+  const data = asApiObject(await request({
     types: API_CONFIG.endpoints.url,
-    id: music.id,
+    id: music.url_id || music.id,
     source: music.source,
     br: bitRate
-  });
+  }));
   
   return {
-    url: data.url || '',
-    br: data.br || bitRate,
-    size: data.size || 0
+    url: typeof data.url === 'string' ? data.url : '',
+    br: typeof data.br === 'number' ? data.br : bitRate,
+    size: typeof data.size === 'number' ? data.size : 0
   };
 };
 
@@ -114,14 +141,14 @@ export const ajaxPic = async (
   // Use pic_id if available, otherwise use music id
   const picId = music.pic_id || music.id;
   
-  const data = await request({
+  const data = asApiObject(await request({
     types: API_CONFIG.endpoints.pic,
     id: picId,
     source: music.source,
     size
-  });
+  }));
   
-  return data.url || '';
+  return typeof data.url === 'string' ? data.url : '';
 };
 
 /**
@@ -135,15 +162,15 @@ export const ajaxLyric = async (
   // Use lyric_id if available, otherwise use music id
   const lyricId = music.lyric_id || music.id;
   
-  const data = await request({
+  const data = asApiObject(await request({
     types: API_CONFIG.endpoints.lyric,
     id: lyricId,
     source: music.source
-  });
+  }));
   
   return {
-    lyric: data.lyric || '',
-    tlyric: data.tlyric || ''
+    lyric: typeof data.lyric === 'string' ? data.lyric : '',
+    tlyric: typeof data.tlyric === 'string' ? data.tlyric : ''
   };
 };
 
@@ -154,33 +181,22 @@ export const ajaxLyric = async (
  * Get playlist (may not be supported by new API)
  * @deprecated This endpoint may not be supported by the new API
  */
-export const ajaxPlaylist = async (lid: string): Promise<any> => {
+export const ajaxPlaylist = async <T = unknown>(lid: string): Promise<T> => {
   console.warn('ajaxPlaylist may not be supported by the new GD Studio API');
   return request({
     types: 'playlist',
     id: lid,
-  });
+  }) as Promise<T>;
 };
 
 /**
  * Get user list (may not be supported by new API)
  * @deprecated This endpoint may not be supported by the new API
  */
-export const ajaxUserList = async (uid: string): Promise<any> => {
+export const ajaxUserList = async <T = unknown>(uid: string): Promise<T> => {
   console.warn('ajaxUserList may not be supported by the new GD Studio API');
   return request({
     types: 'userlist',
     uid,
-  });
-};
-
-/**
- * Get rate limiter status
- */
-export const getRateLimiterStatus = () => {
-  return {
-    requestCount: rateLimiter.getRequestCount(),
-    remainingRequests: rateLimiter.getRemainingRequests(),
-    limit: API_CONFIG.requestLimit
-  };
+  }) as Promise<T>;
 };

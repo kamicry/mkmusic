@@ -3,8 +3,6 @@
  * 
  * API Documentation: https://music-api.gdstudio.xyz/api.php
  * Stable Music Sources: netease, kuwo, joox
- * Rate Limit: 50 requests per 5 minutes
- * 
  * Original API by metowolf & mengkun
  * Modified by GD Studio
  * 
@@ -44,10 +42,6 @@ export const API_CONFIG = {
   // Default page size for search results
   pageSize: 20,
   
-  // API request limit (50 requests per 5 minutes)
-  requestLimit: 50,
-  requestWindow: 5 * 60 * 1000, // 5 minutes in milliseconds
-  
   // API endpoint types
   endpoints: {
     search: 'search',
@@ -75,36 +69,3 @@ export function buildApiUrl(params: Record<string, string | number>): string {
   });
   return url.toString();
 }
-
-// Rate limiting tracker
-class RateLimiter {
-  private requests: number[] = [];
-  
-  canMakeRequest(): boolean {
-    const now = Date.now();
-    // Remove requests older than the window
-    this.requests = this.requests.filter(
-      time => now - time < API_CONFIG.requestWindow
-    );
-    
-    return this.requests.length < API_CONFIG.requestLimit;
-  }
-  
-  recordRequest(): void {
-    this.requests.push(Date.now());
-  }
-  
-  getRequestCount(): number {
-    const now = Date.now();
-    this.requests = this.requests.filter(
-      time => now - time < API_CONFIG.requestWindow
-    );
-    return this.requests.length;
-  }
-  
-  getRemainingRequests(): number {
-    return API_CONFIG.requestLimit - this.getRequestCount();
-  }
-}
-
-export const rateLimiter = new RateLimiter();

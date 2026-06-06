@@ -44,7 +44,7 @@ export const useLyric = () => {
       // Scroll to current line
       if (lyricAreaRef.current) {
         const scrollPosition = (lineIndex * 30) - (lyricAreaRef.current.clientHeight / 2);
-        lyricAreaRef.current.scrollTo({ top: scrollPosition, behavior: 'smooth' });
+        lyricAreaRef.current.scrollTop = scrollPosition;
       }
     };
 
@@ -83,7 +83,7 @@ export const useLyric = () => {
     // Scroll to current line
     if (lyricAreaRef.current) {
       const scrollPosition = (lineIndex * 30) - (lyricAreaRef.current.clientHeight / 2);
-      lyricAreaRef.current.scrollTo({ top: scrollPosition, behavior: 'smooth' });
+      lyricAreaRef.current.scrollTop = scrollPosition;
     }
   };
 

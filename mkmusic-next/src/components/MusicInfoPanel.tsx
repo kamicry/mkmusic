@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Music } from '../types';
-import { ajaxUrl, ajaxPic, ajaxLyric } from '../utils/api';
+import { ajaxUrl, ajaxPic } from '../utils/api';
 import { usePlayerContext } from '../contexts/PlayerContext';
 import { API_CONFIG } from '../config/api.config';
 
@@ -54,12 +54,36 @@ const MusicInfoPanel: React.FC<MusicInfoPanelProps> = ({ music, onClose }) => {
     return `${mb.toFixed(2)} MB`;
   };
 
-  const copyToClipboard = (text: string, label: string) => {
-    navigator.clipboard.writeText(text).then(() => {
+  const fallbackCopyToClipboard = (text: string): boolean => {
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.setAttribute('readonly', '');
+    textarea.style.position = 'fixed';
+    textarea.style.left = '-9999px';
+    textarea.style.top = '0';
+
+    document.body.appendChild(textarea);
+    textarea.focus();
+    textarea.select();
+
+    try {
+      return document.execCommand('copy');
+    } finally {
+      document.body.removeChild(textarea);
+    }
+  };
+
+  const copyToClipboard = async (text: string, label: string) => {
+    try {
+      if (navigator.clipboard?.writeText && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+      } else if (!fallbackCopyToClipboard(text)) {
+        throw new Error('Fallback copy failed');
+      }
       alert(`${label}已复制到剪贴板`);
-    }).catch(() => {
+    } catch {
       alert('复制失败，请手动复制');
-    });
+    }
   };
 
   return (

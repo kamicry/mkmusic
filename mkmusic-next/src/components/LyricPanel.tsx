@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { usePlayerContext } from '../contexts/PlayerContext';
-import { parseLyric, LyricLine, getLyricIndex } from '../utils/lyric';
+import { parseLyric, getLyricIndex } from '../utils/lyric';
 import { ajaxLyric } from '../utils/api';
 
 const LyricPanel: React.FC = () => {
@@ -22,40 +22,72 @@ const LyricPanel: React.FC = () => {
   const [currentIndex, setCurrentIndex] = useState(-1);
   const lyricRef = useRef<HTMLUListElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const lastLoadedLyricKeyRef = useRef<string>('');
+  const currentMusic = playlist !== undefined ? musicList[playlist]?.item[playid] : null;
+  const lyricKey = currentMusic ? `${currentMusic.source}:${currentMusic.id}:${currentMusic.lyric_id}` : '';
+  const currentMusicRef = useRef(currentMusic);
+
+  useEffect(() => {
+    currentMusicRef.current = currentMusic;
+  }, [currentMusic]);
 
   // 获取歌词数据（原歌词和翻译歌词）
   useEffect(() => {
-    const music = playlist !== undefined ? musicList[playlist]?.item[playid] : null;
-    if (music) {
-      ajaxLyric(music).then((result) => {
-        // 解析原歌词
-        const original = parseLyric(result.lyric || '');
-        setOriginalLyrics(original);
-        
-        // 解析翻译歌词（如果存在）
-        const translated = result.tlyric ? parseLyric(result.tlyric) : [];
-        setTranslatedLyrics(translated);
-        
-        // 设置是否有翻译
-        const hasTrans = !!(result.tlyric && result.tlyric.trim().length > 0);
-        setHasTranslation(hasTrans);
-        
-        // 重置显示状态
-        setShowTranslation(false);
-        setCurrentIndex(-1);
-      }).catch(() => {
-        setOriginalLyrics([{ time: 0, text: '歌词加载失败' }]);
-        setTranslatedLyrics([]);
-        setHasTranslation(false);
-        setShowTranslation(false);
-      });
-    } else {
+    const music = currentMusicRef.current;
+
+    if (!music) {
+      lastLoadedLyricKeyRef.current = '';
       setOriginalLyrics([]);
       setTranslatedLyrics([]);
       setHasTranslation(false);
       setShowTranslation(false);
+      return;
     }
-  }, [playlist, playid, musicList, setOriginalLyrics, setTranslatedLyrics, setHasTranslation, setShowTranslation]);
+
+    if (lastLoadedLyricKeyRef.current === lyricKey) {
+      return;
+    }
+
+    lastLoadedLyricKeyRef.current = lyricKey;
+    let cancelled = false;
+
+    ajaxLyric(music).then((result) => {
+      if (cancelled) {
+        return;
+      }
+
+      // 解析原歌词
+      const original = parseLyric(result.lyric || '');
+      setOriginalLyrics(original);
+
+      // 解析翻译歌词（如果存在）
+      const translated = result.tlyric ? parseLyric(result.tlyric) : [];
+      setTranslatedLyrics(translated);
+
+      // 设置是否有翻译
+      const hasTrans = !!(result.tlyric && result.tlyric.trim().length > 0);
+      setHasTranslation(hasTrans);
+
+      // 重置显示状态
+      setShowTranslation(false);
+      setCurrentIndex(-1);
+    }).catch(() => {
+      if (cancelled) {
+        return;
+      }
+      if (lastLoadedLyricKeyRef.current === lyricKey) {
+        lastLoadedLyricKeyRef.current = '';
+      }
+      setOriginalLyrics([{ time: 0, text: '歌词加载失败' }]);
+      setTranslatedLyrics([]);
+      setHasTranslation(false);
+      setShowTranslation(false);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [lyricKey, setOriginalLyrics, setTranslatedLyrics, setHasTranslation, setShowTranslation]);
 
   // 获取当前显示的歌词
   const currentLyrics = showTranslation ? translatedLyrics : originalLyrics;
@@ -91,13 +123,10 @@ const LyricPanel: React.FC = () => {
         const maxScrollTop = lyricRef.current.clientHeight - containerHeight;
         const targetScrollTop = Math.max(0, Math.min(scrollTop, maxScrollTop));
         
-        container.scrollTo({
-          top: targetScrollTop,
-          behavior: 'smooth'
-        });
+        container.scrollTop = targetScrollTop;
       }
     } else if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+      scrollContainerRef.current.scrollTop = 0;
     }
   }, [currentIndex]);
 
