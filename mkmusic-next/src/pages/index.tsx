@@ -151,7 +151,6 @@ export default function Home() {
       setMusicList(prev => {
         const newList = [...prev];
         newList[0].item = items;
-        newList[1].item = items;
         return newList;
       });
       setDislist(0);
