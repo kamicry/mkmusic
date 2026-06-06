@@ -28,8 +28,8 @@ export interface ApiSearchResult {
 }
 
 // Helper for making API requests with rate limiting
-async function request(params: Record<string, string | number>): Promise<unknown> {
-  const url = buildApiUrl(params);
+async function request(params: Record<string, string | number>, baseUrl?: string): Promise<unknown> {
+  const url = buildApiUrl(params, baseUrl);
 
   const pendingRequest = inFlightRequests.get(url);
   if (pendingRequest) {
@@ -174,19 +174,14 @@ export const ajaxLyric = async (
   };
 };
 
-// Note: Playlist and userlist endpoints are not documented in the new API
-// These functions are kept for backward compatibility but may not work
-
 /**
  * Get playlist (may not be supported by new API)
- * @deprecated This endpoint may not be supported by the new API
  */
 export const ajaxPlaylist = async <T = unknown>(lid: string): Promise<T> => {
-  console.warn('ajaxPlaylist may not be supported by the new GD Studio API');
   return request({
     types: 'playlist',
     id: lid,
-  }) as Promise<T>;
+  }, API_CONFIG.playlistBaseUrl) as Promise<T>;
 };
 
 /**

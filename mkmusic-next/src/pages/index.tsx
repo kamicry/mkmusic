@@ -57,54 +57,35 @@ export default function Home() {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // 单独加载默认播放列表的 useEffect，不依赖其他状态
-  useEffect(() => {
-    interface PlaylistTrack {
-      id: string;
+  interface PlaylistTrack {
+    id: string;
+    name: string;
+    ar: Array<{ name: string }>;
+    al: { name: string; picUrl: string };
+  }
+
+  interface PlaylistResponse {
+    playlist: {
       name: string;
-      ar: Array<{ name: string }>;
-      al: { name: string; picUrl: string };
-    }
-
-    interface PlaylistResponse {
-      playlist: {
-        name: string;
-        coverImgUrl: string;
-        tracks: PlaylistTrack[];
-      };
-    }
-
-    const loadDefaultPlaylist = async () => {
-      try {
-        const data = await ajaxPlaylist<PlaylistResponse>("3778678"); // 云音乐热歌榜
-        setMusicList(prev => {
-          const newList = [...prev];
-          newList[3] = {
-            id: "3778678",
-            name: data.playlist.name,
-            cover: data.playlist.coverImgUrl + "?param=200y200",
-            item: data.playlist.tracks.map((track) => ({
-              id: track.id,
-              name: track.name,
-              artist: track.ar[0]?.name || '',
-              album: track.al.name,
-              source: "netease",
-              url_id: track.id,
-              pic_id: null,
-              lyric_id: track.id,
-              pic: track.al.picUrl + "?param=300y300",
-              url: null
-            }))
-          };
-          return newList;
-        });
-      } catch (error) {
-        console.error('Failed to load default playlist', error);
-      }
+      coverImgUrl: string;
+      tracks: PlaylistTrack[];
     };
+  }
 
-    loadDefaultPlaylist();
-  }, []);
+  const toMusicItems = (tracks: PlaylistTrack[]): Music[] => (
+    tracks.map((track) => ({
+      id: track.id,
+      name: track.name,
+      artist: track.ar[0]?.name || '',
+      album: track.al.name,
+      source: "netease",
+      url_id: track.id,
+      pic_id: null,
+      lyric_id: track.id,
+      pic: track.al.picUrl + "?param=300y300",
+      url: null
+    }))
+  );
 
   // Initialize and update play history in musicList when playHistory changes
   useEffect(() => {
@@ -180,6 +161,40 @@ export default function Home() {
         }
         setPlaylist(1);
         setPlayid(index);
+    }
+  };
+
+  const handleSheetClick = async (index: number) => {
+    const listIndex = index + 3;
+    const selectedList = musicList[listIndex];
+
+    setDislist(listIndex);
+    setView('list');
+
+    if (!selectedList || selectedList.item.length > 0 || !selectedList.id || !/^\d+$/.test(selectedList.id)) {
+      return;
+    }
+
+    try {
+      const data = await ajaxPlaylist<PlaylistResponse>(selectedList.id);
+      setMusicList(prev => {
+        const currentList = prev[listIndex];
+        if (!currentList || currentList.item.length > 0) {
+          return prev;
+        }
+
+        const newList = [...prev];
+        newList[listIndex] = {
+          id: selectedList.id,
+          name: data.playlist.name,
+          cover: data.playlist.coverImgUrl + "?param=200y200",
+          item: toMusicItems(data.playlist.tracks)
+        };
+        return newList;
+      });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : '歌单加载失败';
+      msg(errorMessage);
     }
   };
 
@@ -353,7 +368,7 @@ export default function Home() {
                   <div className="sheet-section">
                     <h3>推荐歌单</h3>
                     {musicList.slice(3).map((sheet, index) => (
-                      <div key={index} className="sheet-item" onClick={() => { setDislist(index + 3); setView('list'); }}>
+                      <div key={index} className="sheet-item" onClick={() => handleSheetClick(index)}>
                         <div className="sheet-cover-box">
                           <img src={sheet.cover || 'images/player_cover.png'} className="sheet-cover" alt="sheet cover" />
                         </div>

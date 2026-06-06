@@ -13,6 +13,9 @@
 export const API_CONFIG = {
   // Base URL for the music API
   baseUrl: 'https://music-api.gdstudio.xyz/api.php',
+
+  // GD Music web endpoint used for playlist/ranking data
+  playlistBaseUrl: 'https://music.gdstudio.org/api.php',
   
   // Only stable music sources are supported
   sources: ['netease', 'kuwo', 'joox'] as const,
@@ -62,8 +65,8 @@ export type MusicSource = typeof API_CONFIG.sources[number];
 export type BitRate = typeof API_CONFIG.bitRates[number];
 
 // Helper to build API URL with parameters
-export function buildApiUrl(params: Record<string, string | number>): string {
-  const url = new URL(API_CONFIG.baseUrl);
+export function buildApiUrl(params: Record<string, string | number>, baseUrl = API_CONFIG.baseUrl): string {
+  const url = new URL(baseUrl);
   Object.entries(params).forEach(([key, value]) => {
     url.searchParams.append(key, value.toString());
   });
