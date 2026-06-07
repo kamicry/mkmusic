@@ -36,6 +36,11 @@ export const playerRemovedata = (key: string): void => {
 };
 
 // Play history management functions
+const sanitizeHistoryMusic = (music: Music): Music => ({
+  ...music,
+  url: null
+});
+
 export const savePlayHistory = (music: Music): void => {
   if (typeof window === 'undefined' || !window.localStorage) {
     return;
@@ -43,11 +48,11 @@ export const savePlayHistory = (music: Music): void => {
 
   try {
     const historyKey = 'history';
-    const existingHistory = (playerReaddata('history') as Music[]) || [];
+    const existingHistory = ((playerReaddata('history') as Music[]) || []).map(sanitizeHistoryMusic);
     
     // Add playedAt timestamp
     const musicWithTimestamp = {
-      ...music,
+      ...sanitizeHistoryMusic(music),
       playedAt: Date.now()
     };
 
@@ -75,7 +80,7 @@ export const getPlayHistory = (): Music[] => {
 
   try {
     const history = (playerReaddata('history') as Music[]) || [];
-    return history;
+    return history.map(sanitizeHistoryMusic);
   } catch (error) {
     console.error('Failed to get play history:', error);
     return [];
